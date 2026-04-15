@@ -56,22 +56,39 @@
     <script>
         const API_URL = "https://birthday-aka-pages-schemes.trycloudflare.com";
 
+        // Curățare la refresh (Securitate)
+        window.onload = () => {
+            document.getElementById('res-gen').classList.add('hidden');
+            document.getElementById('statusResult').classList.add('hidden');
+            document.getElementById('msgRet').innerText = "";
+            console.log("Session cleared for security.");
+        };
+
         async function genereazaBilet() {
+            const btn = document.getElementById('btnGen');
+            btn.innerText = "CONNECTING...";
             try {
                 const res = await fetch(`${API_URL}/genereaza`);
+                if (!res.ok) throw new Error("Server error");
                 const data = await res.json();
                 document.getElementById('adrDep').innerText = data.adresa;
                 document.getElementById('codSecret').innerText = data.cod;
                 document.getElementById('res-gen').classList.remove('hidden');
-                document.getElementById('btnGen').style.display = "none";
-            } catch (e) { alert("Server connection error!"); }
+                btn.style.display = "none";
+            } catch (e) { 
+                alert("Connection failed! Check if VPS is online."); 
+                btn.innerText = "RETRY GENERATION";
+            }
         }
 
         async function checkStatus() {
-            const parola = document.getElementById('statusCod').value;
+            const parola = document.getElementById('statusCod').value.trim();
             const resDiv = document.getElementById('statusResult');
+            if (!parola) return;
+            
             resDiv.classList.remove('hidden');
-            resDiv.innerHTML = "<span class='loading'>SCANNING NODES...</span>";
+            resDiv.innerHTML = "<span class='loading text-white'>SCANNING BASE NETWORK...</span>";
+            
             try {
                 const res = await fetch(`${API_URL}/status`, {
                     method: 'POST',
@@ -80,12 +97,17 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    resDiv.innerHTML = `STATUS: ${data.status} <br> BALANCE: ${data.suma} ETH`;
-                    resDiv.style.color = data.status === "CONFIRMAT" ? "#00ffcc" : "#ffcc00";
+                    resDiv.innerHTML = `STATUS: ${data.status} <br> SUM: ${data.suma} ETH`;
+                    resDiv.style.color = "#00ffcc";
                 } else {
-                    resDiv.innerText = "CODE NOT FOUND OR EXPIRED";
+                    resDiv.innerText = "INVALID OR EXPIRED CODE";
                     resDiv.style.color = "#ff4444";
                 }
+            } catch (e) { 
+                resDiv.innerText = "SERVER CONNECTION LOST"; 
+                resDiv.style.color = "#ff4444";
+            }
+            
             } catch (e) { resDiv.innerText = "SERVER OFFLINE"; }
         }
 
