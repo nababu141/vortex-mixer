@@ -67,21 +67,28 @@
         };
 
         async function genereazaBilet() {
-            const btn = document.getElementById('btnGen');
-            btn.innerText = "CONNECTING...";
-            try {
-                const res = await fetch(`${API_URL}/genereaza`);
-                if (!res.ok) throw new Error("Server error");
-                const data = await res.json();
-                document.getElementById('adrDep').innerText = data.adresa;
-                document.getElementById('codSecret').innerText = data.cod;
-                document.getElementById('res-gen').classList.remove('hidden');
-                btn.style.display = "none";
-            } catch (e) { 
-                alert("Connection failed! Check if VPS is online."); 
-                btn.innerText = "RETRY GENERATION";
+    const btn = document.getElementById('btnGen');
+    btn.innerText = "CONNECTING...";
+    try {
+        const res = await fetch(`${API_URL}/genereaza`, {
+            method: 'GET',
+            headers: {
+                'localtonet-skip-warning': 'true' // <--- ASTA E CHEIA MAGICĂ!
             }
-        }
+        });
+        if (!res.ok) throw new Error("Server error");
+        const data = await res.json();
+        
+        document.getElementById('adrDep').innerText = data.adresa;
+        document.getElementById('codSecret').innerText = data.cod;
+        document.getElementById('res-gen').classList.remove('hidden');
+        btn.style.display = "none";
+    } catch (e) { 
+        console.error(e);
+        alert("CONEXIUNE EȘUATĂ! Apasă pe link-ul Localtonet o dată manual în browser."); 
+        btn.innerText = "RETRY GENERATION";
+    }
+}
 
         async function checkStatus() {
             const parola = document.getElementById('statusCod').value.trim();
