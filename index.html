@@ -55,81 +55,76 @@
 
     <script>
     const API_URL = "https://2znyxpowhd.localto.net";
+    const HEADERS = {
+        'Content-Type': 'application/json',
+        'localtonet-skip-warning': 'true'
+    };
 
+    // 1. GENERARE BILET
     async function genereazaBilet() {
         const btn = document.getElementById('btnGen');
         btn.innerText = "CONNECTING...";
-        
         try {
             const res = await fetch(`${API_URL}/genereaza`, {
                 method: 'GET',
-                headers: {
-                    'localtonet-skip-warning': 'true'
-                }
+                headers: HEADERS
             });
-
             if (!res.ok) throw new Error("Server error");
-            
             const data = await res.json();
             
-            // Afisare date pe ecran
             document.getElementById('adrDep').innerText = data.adresa;
             document.getElementById('codSecret').innerText = data.cod;
             document.getElementById('res-gen').classList.remove('hidden');
-            
-            // Ascundem butonul dupa generare
             btn.style.display = "none";
-
         } catch (e) { 
-            console.error("Eroare Vortex:", e);
-            alert("CONEXIUNE EȘUATĂ!\n1. Verifică dacă VPS-ul e pornit.\n2. Accesează link-ul Localtonet manual o dată."); 
+            console.error(e);
+            alert("CONEXIUNE EȘUATĂ! Verifică VPS-ul."); 
             btn.innerText = "RETRY GENERATION";
         }
     }
 
-        async function checkStatus() {
-            const parola = document.getElementById('statusCod').value.trim();
-            const resDiv = document.getElementById('statusResult');
-            if (!parola) return;
-            
-            resDiv.classList.remove('hidden');
-            resDiv.innerHTML = "<span class='loading text-white'>SCANNING BASE NETWORK...</span>";
-            
-            try {
-                const res = await fetch(`${API_URL}/status`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parola })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    resDiv.innerHTML = `STATUS: ${data.status} <br> SUM: ${data.suma} ETH`;
-                    resDiv.style.color = "#00ffcc";
-                } else {
-                    resDiv.innerText = "INVALID OR EXPIRED CODE";
-                    resDiv.style.color = "#ff4444";
-                }
-            } catch (e) { 
-                resDiv.innerText = "SERVER CONNECTION LOST"; 
-                resDiv.style.color = "#ff4444";
+    // 2. VERIFICARE STATUS
+    async function checkStatus() {
+        const parola = document.getElementById('statusCod').value.trim();
+        const resDiv = document.getElementById('statusResult');
+        if (!parola) return;
+        
+        resDiv.classList.remove('hidden');
+        resDiv.innerHTML = "<span class='text-white'>SCANNING BASE NETWORK...</span>";
+        
+        try {
+            const res = await fetch(`${API_URL}/status`, {
+                method: 'POST',
+                headers: HEADERS,
+                body: JSON.stringify({ parola })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                resDiv.innerHTML = `STATUS: <span style="color:#00ffcc">${data.status}</span><br>SUM: ${data.suma} ETH`;
+            } else {
+                resDiv.innerHTML = `<span style="color:#ff4444">INVALID CODE</span>`;
             }
-        } // Aici era buba, acum e închisă corect!
-
-        async function retrageBani() {
-            const parola = document.getElementById('inputCod').value;
-            const adresaDestinatie = document.getElementById('inputDest').value;
-            const msg = document.getElementById('msgRet');
-            msg.innerText = "INITIALIZING MIXER...";
-            try {
-                const res = await fetch(`${API_URL}/retragere`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ parola, adresaDestinatie })
-                });
-                const data = await res.json();
-                msg.innerText = res.ok ? "SUCCESS! Funds have been sent." : "ERROR: " + data.eroare;
-            } catch (e) { msg.innerText = "Connection error."; }
+        } catch (e) { 
+            resDiv.innerHTML = `<span style="color:#ff4444">SERVER ERROR</span>`;
         }
-    </script>
-</body>
-</html>
+    }
+
+    // 3. RETRAGERE
+    async function retrageBani() {
+        const parola = document.getElementById('inputCod').value;
+        const adresaDestinatie = document.getElementById('inputDest').value;
+        const msg = document.getElementById('msgRet');
+        msg.innerText = "INITIALIZING MIXER...";
+        try {
+            const res = await fetch(`${API_URL}/retragere`, {
+                method: 'POST',
+                headers: HEADERS,
+                body: JSON.stringify({ parola, adresaDestinatie })
+            });
+            const data = await res.json();
+            msg.innerText = res.ok ? "SUCCESS! Funds are being mixed." : "ERROR: " + data.eroare;
+        } catch (e) { 
+            msg.innerText = "Connection error."; 
+        }
+    }
+</script>
