@@ -58,8 +58,10 @@
 
         // Curățare la refresh (Securitate)
         window.onload = () => {
-            document.getElementById('res-gen').classList.add('hidden');
-            document.getElementById('statusResult').classList.add('hidden');
+            const resGen = document.getElementById('res-gen');
+            const statusRes = document.getElementById('statusResult');
+            if(resGen) resGen.classList.add('hidden');
+            if(statusRes) statusRes.classList.add('hidden');
             document.getElementById('msgRet').innerText = "";
             console.log("Session cleared for security.");
         };
@@ -107,9 +109,7 @@
                 resDiv.innerText = "SERVER CONNECTION LOST"; 
                 resDiv.style.color = "#ff4444";
             }
-            
-            } catch (e) { resDiv.innerText = "SERVER OFFLINE"; }
-        }
+        } // Aici era buba, acum e închisă corect!
 
         async function retrageBani() {
             const parola = document.getElementById('inputCod').value;
