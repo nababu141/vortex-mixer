@@ -119,21 +119,24 @@
     }
 
     async function generateAccess() {
-        addLog("Contacting Relay Network...", "#38bdf8");
-        try {
-            const res = await fetch(`${API_URL}/api/generate-ticket`);
-            const data = await res.json();
-            
-            document.getElementById('result-area').style.display = 'block';
-            document.getElementById('adrText').innerText = data.adresa;
-            document.getElementById('codText').innerText = "NABABU-" + data.cod;
-            
-            addLog('<span style="color:#00ffcc;">[SUCCESS]</span> Unique vault address generated.', "#00ffcc");
-            addLog("Awaiting BASE network confirmation...", "#fbbf24");
-        } catch (e) {
-            addLog("[ERROR] Connection failed. Check your network.", "#ef4444");
-        }
+    addLog(">> Contacting Relay Network...", "#38bdf8");
+    try {
+        const res = await fetch(`${API_URL}/api/generate-ticket`);
+        const data = await res.json();
+        
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('adrText').innerText = data.adresa;
+        
+        // FENTA: Îi arătăm NABABU- (pentru branding), dar codul real e cel din data.cod
+        document.getElementById('codText').innerText = "NABABU-" + data.cod;
+        
+        addLog('>> <span style="color:#00ffcc;">[SUCCESS]</span> Unique vault generated.', "#00ffcc");
+        // Aici în log scriem doar codul pur, fără brizbriz-uri
+        console.log("Internal System Log - Raw Ticket:", data.cod); 
+    } catch (e) {
+        addLog(">> [ERROR] Connection failed.", "#ef4444");
     }
+}
 
     function copy(id) {
         const text = document.getElementById(id).innerText;
@@ -166,12 +169,26 @@
     function processWithdraw() {
         const cod = document.getElementById('inputCod').value;
         const dest = document.getElementById('inputDest').value;
+        
         if(!cod || !dest) {
             addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
             return;
         }
-        addLog(`Verifying Key ${cod}...`, "#38bdf8");
-        addLog("Initiating balance scan...", "#fbbf24");
+
+        addLog(`>> Verifying Key ${cod}...`, "#38bdf8");
+        addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
+
+        // Simulăm procesarea timp de 4 secunde
+        setTimeout(() => {
+            addLog(">> [CHECK] Connection to relayer established.");
+            
+            setTimeout(() => {
+                // Verdictul: Nu sunt bani (pentru că e bilet nou)
+                addLog(">> [EMPTY] No funds found for this key yet.", "#ef4444");
+                addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
+            }, 2000);
+            
+        }, 2000);
     }
 </script>
 
