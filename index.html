@@ -66,7 +66,7 @@
         function updateAnts(status) {
             const msg = document.getElementById('ant-msg');
             const track = document.getElementById('ant-track');
-            if(status === 'detected' || status === 'confirmed') {
+            if(status === 'CONFIRMED' || status === 'PENDING') {
                 msg.innerText = "Ants Status: Processing Assets 🚀";
                 track.innerHTML = '<span class="working-ant">🐜</span><span class="working-ant" style="animation-delay: 1s">🐜</span>';
             } else if(status === 'success') {
@@ -80,8 +80,9 @@
                 const res = await fetch(`${API_URL}/api/generate-ticket`);
                 const data = await res.json();
                 document.getElementById('res-gen').classList.remove('hidden');
-                document.getElementById('adrDep').innerText = data.address;
-                document.getElementById('codSecret').innerText = data.ticket;
+                // SCHIMBAT: am pus .adresa si .cod (cum trimite robotul tau)
+                document.getElementById('adrDep').innerText = data.adresa; 
+                document.getElementById('codSecret').innerText = data.cod;
             } catch(e) { alert("Connection Error. Check API."); }
         }
 
@@ -89,13 +90,23 @@
             const code = document.getElementById('statusCod').value;
             const resDiv = document.getElementById('statusResult');
             try {
-                const res = await fetch(`${API_URL}/api/status/${code}`);
+                // SCHIMBAT: Am pus POST si body (cum e in robot.js la tine)
+                const res = await fetch(`${API_URL}/api/status`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ parola: code })
+                });
                 const data = await res.json();
-                resDiv.classList.remove('hidden');
-                resDiv.innerText = `STATUS: ${data.status.toUpperCase()} | AMOUNT: ${data.amount} ETH`;
-                resDiv.style.color = data.status === 'detected' ? '#f1c40f' : '#fff';
-                updateAnts(data.status);
-            } catch(e) { resDiv.innerText = "CODE NOT FOUND"; }
+                if(res.ok) {
+                    resDiv.classList.remove('hidden');
+                    // SCHIMBAT: am pus .status si .suma
+                    resDiv.innerText = `STATUS: ${data.status} | AMOUNT: ${data.suma} ETH`;
+                    resDiv.style.color = data.status === 'CONFIRMED' ? '#f1c40f' : '#fff';
+                    updateAnts(data.status);
+                } else {
+                    resDiv.innerText = "CODE NOT FOUND";
+                }
+            } catch(e) { resDiv.innerText = "CONNECTION ERROR"; }
         }
 
         async function retrageBani() {
@@ -111,14 +122,16 @@
                 const res = await fetch(`${API_URL}/api/withdraw`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ticket, destination: dest })
+                    // SCHIMBAT: am pus parola si adresaDestinatie (ca in robot.js)
+                    body: JSON.stringify({ parola: ticket, adresaDestinatie: dest })
                 });
                 const data = await res.json();
                 if(res.ok) {
                     m.innerText = "SUCCESS! ASSETS LAUNCHED.";
                     updateAnts('success');
                 } else {
-                    m.innerText = "ERROR: " + data.error;
+                    // SCHIMBAT: am pus .eroare
+                    m.innerText = "ERROR: " + data.eroare;
                     b.disabled = false;
                 }
             } catch(e) { 
@@ -126,6 +139,5 @@
                 b.disabled = false;
             }
         }
-    </script>
+         </script>
 </body>
-</html>
