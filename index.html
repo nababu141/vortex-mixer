@@ -1,143 +1,152 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NABABU VORTEX | Global ETH Mixer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Diamond Mixer | Privacy Protocol</title>
     <style>
-        body { background: #0c0c0c; color: #f1c40f; min-height: 100vh; font-family: 'Inter', sans-serif; }
-        .nababu-card { background: #141414; border: 2px solid #f1c40f; box-shadow: 0 0 30px rgba(241, 196, 15, 0.1); }
-        .btn-gold { background: #f1c40f; color: #000; font-weight: 800; transition: all 0.3s; text-transform: uppercase; border-radius: 12px; }
-        .btn-gold:hover { background: #d4ac0d; box-shadow: 0 0 20px #f1c40f; transform: translateY(-1px); }
-        .ant-colony { background: #1a1a1a; border: 1px dashed #f1c40f; border-radius: 15px; position: relative; overflow: hidden; height: 100px; }
-        @keyframes antMove { 0% { left: -10%; } 100% { left: 110%; } }
-        .working-ant { position: absolute; animation: antMove 3s infinite linear; font-size: 20px; top: 40%; }
+        body { background: #020617; color: #94a3b8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; display: flex; justify-content: center; min-height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 550px; background: #0f172a; padding: 30px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); align-self: center; }
+        h1 { color: #f8fafc; text-align: center; font-weight: 300; letter-spacing: 5px; font-size: 24px; margin-bottom: 30px; text-transform: uppercase; }
+        
+        /* Taburi */
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; background: #1e293b; color: #94a3b8; border: none; padding: 12px; cursor: pointer; font-weight: 600; border-radius: 4px; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
+        .tab-btn.active { background: #38bdf8; color: #020617; }
+        
+        .card { display: none; margin-bottom: 25px; padding: 20px; background: #020617; border-radius: 8px; border: 1px solid #1e293b; }
+        .card.active { display: block; animation: fadeIn 0.3s ease; }
+
+        h3 { color: #38bdf8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+        
+        /* Butoane principale */
+        button.main-btn { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; padding: 15px; cursor: pointer; width: 100%; font-weight: 600; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        button.main-btn:hover { background: #38bdf8; color: #020617; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+
+        /* Afișaj Rezultate Mărit */
+        .data-display { background: #0f172a; padding: 15px; border-radius: 6px; border-left: 3px solid #38bdf8; margin-bottom: 15px; }
+        .label-text { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        
+        /* ADRESA MĂRITĂ */
+        .address-text { color: #f1f5f9; font-family: 'Courier New', monospace; font-size: 18px; word-break: break-all; line-height: 1.4; display: block; margin: 10px 0; }
+        
+        /* COD DIAMOND */
+        .code-text { color: #fbbf24; font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; }
+
+        .copy-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .copy-btn { background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .copy-btn:hover { background: #334155; }
+
+        .warning-box { background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; padding: 12px; font-size: 11px; border-radius: 4px; margin-top: 15px; line-height: 1.5; }
+        
+        /* Consola */
+        .log { background: #000; color: #10b981; padding: 15px; height: 140px; overflow-y: auto; font-size: 11px; border: 1px solid #1e293b; margin-top: 20px; font-family: 'Courier New', monospace; border-radius: 4px; border-left: 3px solid #38bdf8; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
-    <div class="nababu-card w-full max-w-md rounded-3xl p-8 border">
-        <h1 class="text-3xl font-black text-center tracking-tighter mb-1 italic">NABABU VORTEX</h1>
-        <p class="text-[10px] text-center tracking-[0.4em] opacity-60 mb-6 text-white uppercase">High-Speed Liquidity Mixer</p>
+<body>
 
-        <div class="ant-colony mb-6 flex flex-col items-center justify-center">
-            <div id="ant-msg" class="text-[10px] uppercase font-bold text-white/50 mb-2">Ants Status: Idle</div>
-            <div id="ant-track" class="w-full relative h-8">
-                <span class="absolute left-1/4 opacity-30">🐜</span>
-                <span class="absolute left-2/4 opacity-30">🐜</span>
-                <span class="absolute left-3/4 opacity-30">🐜</span>
+<div class="container">
+    <h1>Diamond Mixer</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('depozit')">Depozit</button>
+        <button class="tab-btn" onclick="showTab('retragere')">Retragere</button>
+    </div>
+
+    <div id="depozit" class="card active">
+        <h3>01 Generare Acces</h3>
+        <button class="main-btn" onclick="genereazaAcces()">Generează Cheie Seif</button>
+
+        <div id="result-area" style="display: none; margin-top: 25px;">
+            <div class="data-display">
+                <span class="label-text">Adresă Depozit (Rețeaua BASE)</span>
+                <div class="copy-row">
+                    <span id="adrText" class="address-text">0x...</span>
+                    <button class="copy-btn" onclick="copy('adrText')">📋 COPY</button>
+                </div>
             </div>
-        </div>
 
-        <div id="dep-ui" class="space-y-4">
-            <button onclick="genereazaBilet()" class="btn-gold w-full py-4 shadow-lg">Generate Deposit Ticket</button>
-            <div id="res-gen" class="hidden p-5 bg-black/40 border border-[#f1c40f]/20 rounded-2xl space-y-3">
-                <p class="text-[9px] opacity-50 uppercase text-center text-white">Deposit ETH to:</p>
-                <div id="adrDep" class="font-mono text-white break-all bg-white/5 p-3 rounded-lg border border-white/10 text-[10px] text-center"></div>
-                <p class="text-[9px] opacity-50 uppercase text-center text-yellow-500 font-bold">Secret Ticket Code (Save it!):</p>
-                <div id="codSecret" class="font-black text-yellow-400 text-center text-xl tracking-widest"></div>
+            <div class="data-display">
+                <span class="label-text">Cheie Privată (Diamond Key)</span>
+                <div class="copy-row">
+                    <span id="codText" class="code-text">DIAMOND-XXXX</span>
+                    <button class="copy-btn" onclick="copy('codText')">📋 COPY</button>
+                </div>
             </div>
-        </div>
 
-        <div class="my-6 border-t border-white/5"></div>
-
-        <div class="space-y-3 bg-white/5 p-5 rounded-2xl">
-            <h3 class="text-center text-[10px] tracking-widest opacity-60 font-bold uppercase italic text-white">Live Monitor</h3>
-            <input type="text" id="statusCod" placeholder="ENTER SECRET CODE" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center text-[#f1c40f] outline-none text-sm font-bold">
-            <button onclick="checkStatus()" class="w-full py-2 border border-[#f1c40f]/30 text-[#f1c40f] hover:bg-[#f1c40f] hover:text-black transition-all rounded-xl font-bold text-[10px] uppercase">Scan Status</button>
-            <div id="statusResult" class="hidden text-center p-2 rounded-lg font-bold text-[10px]"></div>
-        </div>
-
-        <div class="my-6 border-t border-white/5"></div>
-
-        <div class="space-y-4">
-            <h3 class="text-center text-[10px] tracking-widest opacity-60 font-bold uppercase italic text-white">Withdrawal Protocol</h3>
-            <input type="text" id="inputCod" placeholder="TICKET CODE (NABABU-XXXX)" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center outline-none text-sm font-bold">
-            <input type="text" id="inputDest" placeholder="DESTINATION ETH ADDRESS (BASE)" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center outline-none text-[10px]">
-            <button id="btnRetrage" onclick="retrageBani()" class="btn-gold w-full py-4 rounded-xl">Launch Ants (Mix Funds)</button>
-            <p id="msgRet" class="text-center text-[10px] mt-2 font-bold text-white/40"></p>
+            <div class="warning-box">
+                ⚠️ <strong>ATENȚIE:</strong> Trimiteți ETH DOAR prin rețeaua <strong>BASE</strong>. Salvați codul DIAMOND pentru a vă putea retrage fondurile ulterior.
+            </div>
         </div>
     </div>
 
-    <script>
-        const API_URL = "https://api.nababu.io";
+    <div id="retragere" class="card">
+        <h3>02 Finalizare Mixare</h3>
+        <input type="text" id="inputCod" placeholder="Introdu Codul DIAMOND-XXXX" style="width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px;">
+        <input type="text" id="inputDest" placeholder="Adresa Destinație (ETH/BASE)" style="width: 100%; box-sizing: border-box; margin-bottom: 15px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px;">
+        <button class="main-btn" onclick="retrage()">Retragere Fonduri</button>
+    </div>
 
-        // Logic for Ant Animation
-        function updateAnts(status) {
-            const msg = document.getElementById('ant-msg');
-            const track = document.getElementById('ant-track');
-            if(status === 'CONFIRMED' || status === 'PENDING') {
-                msg.innerText = "Ants Status: Processing Assets 🚀";
-                track.innerHTML = '<span class="working-ant">🐜</span><span class="working-ant" style="animation-delay: 1s">🐜</span>';
-            } else if(status === 'success') {
-                msg.innerText = "Ants Status: Delivery Complete! 🎉";
-                track.innerHTML = '<div class="text-center text-xl">🥂💎</div>';
-            }
-        }
+    <div class="log" id="consoleLog">
+        >> Terminal inițializat...<br>
+        >> Sistem gata. Așteptare instrucțiuni...
+    </div>
+</div>
 
-        async function genereazaBilet() {
-            try {
-                const res = await fetch(`${API_URL}/api/generate-ticket`);
-                const data = await res.json();
-                document.getElementById('res-gen').classList.remove('hidden');
-                // SCHIMBAT: am pus .adresa si .cod (cum trimite robotul tau)
-                document.getElementById('adrDep').innerText = data.adresa; 
-                document.getElementById('codSecret').innerText = data.cod;
-            } catch(e) { alert("Connection Error. Check API."); }
-        }
+<script>
+    const API_URL = "https://api.nababu.io";
 
-        async function checkStatus() {
-            const code = document.getElementById('statusCod').value;
-            const resDiv = document.getElementById('statusResult');
-            try {
-                // SCHIMBAT: Am pus POST si body (cum e in robot.js la tine)
-                const res = await fetch(`${API_URL}/api/status`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ parola: code })
-                });
-                const data = await res.json();
-                if(res.ok) {
-                    resDiv.classList.remove('hidden');
-                    // SCHIMBAT: am pus .status si .suma
-                    resDiv.innerText = `STATUS: ${data.status} | AMOUNT: ${data.suma} ETH`;
-                    resDiv.style.color = data.status === 'CONFIRMED' ? '#f1c40f' : '#fff';
-                    updateAnts(data.status);
-                } else {
-                    resDiv.innerText = "CODE NOT FOUND";
-                }
-            } catch(e) { resDiv.innerText = "CONNECTION ERROR"; }
-        }
+    function showTab(id) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
 
-        async function retrageBani() {
-            const b = document.getElementById('btnRetrage');
-            const m = document.getElementById('msgRet');
-            const ticket = document.getElementById('inputCod').value;
-            const dest = document.getElementById('inputDest').value;
+    function addLog(msg) {
+        const log = document.getElementById('consoleLog');
+        log.innerHTML += `<br>>> ${msg}`;
+        log.scrollTop = log.scrollHeight;
+    }
 
-            b.disabled = true;
-            m.innerText = "INITIATING ANTS PROTOCOL...";
+    async function genereazaAcces() {
+        addLog("Contactare Rețea Relee...");
+        try {
+            const res = await fetch(`${API_URL}/api/generate-ticket`);
+            const data = await res.json();
             
-            try {
-                const res = await fetch(`${API_URL}/api/withdraw`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    // SCHIMBAT: am pus parola si adresaDestinatie (ca in robot.js)
-                    body: JSON.stringify({ parola: ticket, adresaDestinatie: dest })
-                });
-                const data = await res.json();
-                if(res.ok) {
-                    m.innerText = "SUCCESS! ASSETS LAUNCHED.";
-                    updateAnts('success');
-                } else {
-                    // SCHIMBAT: am pus .eroare
-                    m.innerText = "ERROR: " + data.eroare;
-                    b.disabled = false;
-                }
-            } catch(e) { 
-                m.innerText = "CONNECTION FAILED."; 
-                b.disabled = false;
-            }
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('adrText').innerText = data.adresa;
+            document.getElementById('codText').innerText = "DIAMOND-" + data.cod;
+            
+            addLog("[SUCCES] Adresă unică generată.");
+            addLog("Așteptare confirmare tranzacție pe BASE...");
+        } catch (e) {
+            addLog("[EROARE] Server inaccesibil. Reîncercați.");
         }
-         </script>
+    }
+
+    function copy(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text);
+        addLog(`Copiat în clipboard: ${text.substring(0, 10)}...`);
+        alert("Copiat!");
+    }
+
+    function retrage() {
+        const cod = document.getElementById('inputCod').value;
+        const dest = document.getElementById('inputDest').value;
+        if(!cod || !dest) {
+            addLog("[EROARE] Introduceți codul și adresa!");
+            return;
+        }
+        addLog(`Se verifică cheia ${cod}...`);
+        addLog("Scanare sold în curs...");
+        // Aici va veni logica de retragere
+    }
+</script>
+
 </body>
+</html>
