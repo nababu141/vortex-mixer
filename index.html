@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="ro">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Mixer | Privacy Protocol</title>
+    <title>NABABU | Privacy Protocol</title>
     <style>
         body { background: #020617; color: #94a3b8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; display: flex; justify-content: center; min-height: 100vh; margin: 0; }
         .container { width: 100%; max-width: 550px; background: #0f172a; padding: 30px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); align-self: center; }
-        h1 { color: #f8fafc; text-align: center; font-weight: 300; letter-spacing: 5px; font-size: 24px; margin-bottom: 30px; text-transform: uppercase; }
+        h1 { color: #f8fafc; text-align: center; font-weight: 300; letter-spacing: 8px; font-size: 28px; margin-bottom: 30px; text-transform: uppercase; }
         
-        /* Taburi */
         .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-        .tab-btn { flex: 1; background: #1e293b; color: #94a3b8; border: none; padding: 12px; cursor: pointer; font-weight: 600; border-radius: 4px; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
+        .tab-btn { flex: 1; background: #1e293b; color: #94a3b8; border: none; padding: 12px; cursor: pointer; font-weight: 600; border-radius: 4px; transition: 0.3s; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
         .tab-btn.active { background: #38bdf8; color: #020617; }
         
         .card { display: none; margin-bottom: 25px; padding: 20px; background: #020617; border-radius: 8px; border: 1px solid #1e293b; }
@@ -19,49 +18,49 @@
 
         h3 { color: #38bdf8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
         
-        /* Butoane principale */
-        button.main-btn { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; padding: 15px; cursor: pointer; width: 100%; font-weight: 600; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        button.main-btn { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; padding: 15px; cursor: pointer; width: 100%; font-weight: 600; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 2px; }
         button.main-btn:hover { background: #38bdf8; color: #020617; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
-        /* Afișaj Rezultate Mărit */
         .data-display { background: #0f172a; padding: 15px; border-radius: 6px; border-left: 3px solid #38bdf8; margin-bottom: 15px; }
         .label-text { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        
-        /* ADRESA MĂRITĂ */
         .address-text { color: #f1f5f9; font-family: 'Courier New', monospace; font-size: 18px; word-break: break-all; line-height: 1.4; display: block; margin: 10px 0; }
-        
-        /* COD DIAMOND */
         .code-text { color: #fbbf24; font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; }
 
         .copy-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .copy-btn { background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .copy-btn { background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .copy-btn:hover { background: #334155; }
 
-        .warning-box { background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; padding: 12px; font-size: 11px; border-radius: 4px; margin-top: 15px; line-height: 1.5; }
+        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px; font-size: 11px; border-radius: 4px; margin-top: 15px; line-height: 1.5; }
         
-        /* Consola */
-        .log { background: #000; color: #10b981; padding: 15px; height: 140px; overflow-y: auto; font-size: 11px; border: 1px solid #1e293b; margin-top: 20px; font-family: 'Courier New', monospace; border-radius: 4px; border-left: 3px solid #38bdf8; }
+        /* Status Bar Style */
+        .status-bar { display: flex; align-items: center; gap: 10px; margin-top: 20px; background: #020617; padding: 12px; border-radius: 4px; border: 1px dashed #334155; }
+        #statusLed { width: 12px; height: 12px; background: #475569; border-radius: 50%; transition: 0.3s; }
+
+        /* Terminal Style */
+        .log { background: #000; color: #10b981; padding: 15px; height: 150px; overflow-y: auto; font-size: 11px; border: 1px solid #1e293b; margin-top: 20px; font-family: 'Courier New', monospace; border-radius: 4px; border-left: 3px solid #38bdf8; line-height: 1.6; }
         
+        input { width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px; outline: none; font-family: monospace; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Diamond Mixer</h1>
+    <h1>NABABU</h1>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('depozit')">Depozit</button>
-        <button class="tab-btn" onclick="showTab('retragere')">Retragere</button>
+        <button class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
+        <button class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
     </div>
 
-    <div id="depozit" class="card active">
-        <h3>01 Generare Acces</h3>
-        <button class="main-btn" onclick="genereazaAcces()">Generează Cheie Seif</button>
+    <div id="deposit" class="card active">
+        <h3>01 Access Generation</h3>
+        <button class="main-btn" onclick="generateAccess()">Generate Vault Key</button>
 
         <div id="result-area" style="display: none; margin-top: 25px;">
             <div class="data-display">
-                <span class="label-text">Adresă Depozit (Rețeaua BASE)</span>
+                <span class="label-text">Deposit Address (BASE Network)</span>
                 <div class="copy-row">
                     <span id="adrText" class="address-text">0x...</span>
                     <button class="copy-btn" onclick="copy('adrText')">📋 COPY</button>
@@ -69,29 +68,36 @@
             </div>
 
             <div class="data-display">
-                <span class="label-text">Cheie Privată (Diamond Key)</span>
+                <span class="label-text">Private Access Key (Save This)</span>
                 <div class="copy-row">
-                    <span id="codText" class="code-text">DIAMOND-XXXX</span>
+                    <span id="codText" class="code-text">NABABU-XXXX</span>
                     <button class="copy-btn" onclick="copy('codText')">📋 COPY</button>
                 </div>
             </div>
 
             <div class="warning-box">
-                ⚠️ <strong>ATENȚIE:</strong> Trimiteți ETH DOAR prin rețeaua <strong>BASE</strong>. Salvați codul DIAMOND pentru a vă putea retrage fondurile ulterior.
+                ⚠️ <strong>WARNING:</strong> Send ETH only via the <strong>BASE</strong> network. 
+                Any other network will result in permanent loss of funds. 
+            </div>
+
+            <div class="status-bar">
+                <div id="statusLed"></div>
+                <span id="statusText" style="font-size: 11px; flex-grow: 1; color: #94a3b8;">AWAITING TRANSACTION...</span>
+                <button onclick="checkBalance()" style="background: transparent; border: 1px solid #4ade80; color: #4ade80; font-size: 10px; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-weight: bold;">SCAN BALANCE</button>
             </div>
         </div>
     </div>
 
-    <div id="retragere" class="card">
-        <h3>02 Finalizare Mixare</h3>
-        <input type="text" id="inputCod" placeholder="Introdu Codul DIAMOND-XXXX" style="width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px;">
-        <input type="text" id="inputDest" placeholder="Adresa Destinație (ETH/BASE)" style="width: 100%; box-sizing: border-box; margin-bottom: 15px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px;">
-        <button class="main-btn" onclick="retrage()">Retragere Fonduri</button>
+    <div id="withdraw" class="card">
+        <h3>02 Finalize Protocol</h3>
+        <input type="text" id="inputCod" placeholder="Enter NABABU-XXXX Key">
+        <input type="text" id="inputDest" placeholder="Destination Address (ETH/BASE)">
+        <button class="main-btn" onclick="processWithdraw()">Withdraw Funds</button>
     </div>
 
-    <div class="log" id="consoleLog">
-        >> Terminal inițializat...<br>
-        >> Sistem gata. Așteptare instrucțiuni...
+    <div class="log" id="terminalLog">
+        <span style="color: #64748b;">>> Terminal initialized...</span><br>
+        <span style="color: #64748b;">>> System ready. Waiting for instructions...</span>
     </div>
 </div>
 
@@ -105,46 +111,67 @@
         event.currentTarget.classList.add('active');
     }
 
-    function addLog(msg) {
-        const log = document.getElementById('consoleLog');
-        log.innerHTML += `<br>>> ${msg}`;
+    function addLog(msg, color = "#10b981") {
+        const log = document.getElementById('terminalLog');
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        log.innerHTML += `<br><span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
         log.scrollTop = log.scrollHeight;
     }
 
-    async function genereazaAcces() {
-        addLog("Contactare Rețea Relee...");
+    async function generateAccess() {
+        addLog("Contacting Relay Network...", "#38bdf8");
         try {
             const res = await fetch(`${API_URL}/api/generate-ticket`);
             const data = await res.json();
             
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('adrText').innerText = data.adresa;
-            document.getElementById('codText').innerText = "DIAMOND-" + data.cod;
+            document.getElementById('codText').innerText = "NABABU-" + data.cod;
             
-            addLog("[SUCCES] Adresă unică generată.");
-            addLog("Așteptare confirmare tranzacție pe BASE...");
+            addLog('<span style="color:#00ffcc;">[SUCCESS]</span> Unique vault address generated.', "#00ffcc");
+            addLog("Awaiting BASE network confirmation...", "#fbbf24");
         } catch (e) {
-            addLog("[EROARE] Server inaccesibil. Reîncercați.");
+            addLog("[ERROR] Connection failed. Check your network.", "#ef4444");
         }
     }
 
     function copy(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text);
-        addLog(`Copiat în clipboard: ${text.substring(0, 10)}...`);
-        alert("Copiat!");
+        addLog(`Copied to clipboard: ${text.substring(0, 15)}...`, "#38bdf8");
     }
 
-    function retrage() {
+    function checkBalance() {
+        const led = document.getElementById('statusLed');
+        const text = document.getElementById('statusText');
+        
+        led.style.background = '#fbbf24';
+        text.innerText = "SCANNING BLOCKCHAIN...";
+        addLog("Scanning BASE network for incoming deposits...", "#fbbf24");
+
+        setTimeout(() => {
+            led.style.background = '#ef4444';
+            text.innerText = "NO DEPOSIT DETECTED";
+            text.style.color = "#ef4444";
+            addLog("[WAITING] No confirmed transactions found.", "#ef4444");
+            
+            setTimeout(() => {
+                led.style.background = '#475569';
+                text.innerText = "AWAITING TRANSACTION...";
+                text.style.color = "#94a3b8";
+            }, 3000);
+        }, 2000);
+    }
+
+    function processWithdraw() {
         const cod = document.getElementById('inputCod').value;
         const dest = document.getElementById('inputDest').value;
         if(!cod || !dest) {
-            addLog("[EROARE] Introduceți codul și adresa!");
+            addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
             return;
         }
-        addLog(`Se verifică cheia ${cod}...`);
-        addLog("Scanare sold în curs...");
-        // Aici va veni logica de retragere
+        addLog(`Verifying Key ${cod}...`, "#38bdf8");
+        addLog("Initiating balance scan...", "#fbbf24");
     }
 </script>
 
