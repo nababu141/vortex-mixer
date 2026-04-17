@@ -3,128 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIAMOND VORTEX | Anonymous Mixer</title>
+    <title>NABABU VORTEX | Global ETH Mixer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: radial-gradient(circle at center, #0a110f 0%, #050505 100%); color: #00ffcc; min-height: 100vh; font-family: 'Courier New', monospace; }
-        .vortex-card { border: 1px solid rgba(0, 255, 204, 0.3); background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); }
-        .btn-vortex { background: #00ffcc; color: #000; font-weight: bold; transition: all 0.3s; text-transform: uppercase; }
-        .btn-vortex:hover { box-shadow: 0 0 25px #00ffcc; transform: translateY(-2px); }
-        .loading { animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        body { background: #0c0c0c; color: #f1c40f; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .nababu-card { background: #141414; border: 2px solid #f1c40f; box-shadow: 0 0 30px rgba(241, 196, 15, 0.1); }
+        .btn-gold { background: #f1c40f; color: #000; font-weight: 800; transition: all 0.3s; text-transform: uppercase; border-radius: 12px; }
+        .btn-gold:hover { background: #d4ac0d; box-shadow: 0 0 20px #f1c40f; transform: translateY(-1px); }
+        .ant-colony { background: #1a1a1a; border: 1px dashed #f1c40f; border-radius: 15px; position: relative; overflow: hidden; height: 100px; }
+        @keyframes antMove { 0% { left: -10%; } 100% { left: 110%; } }
+        .working-ant { position: absolute; animation: antMove 3s infinite linear; font-size: 20px; top: 40%; }
     </style>
 </head>
-<body class="flex items-center justify-center p-4 text-sm">
-    <div class="vortex-card w-full max-w-md rounded-3xl p-8 border">
-        <h1 class="text-3xl font-black text-center tracking-tighter mb-2 italic">DIAMOND VORTEX</h1>
-        <p class="text-[9px] text-center tracking-[0.5em] opacity-40 mb-8">OFFSHORE ASSET MIXER</p>
+<body class="flex items-center justify-center p-4">
+    <div class="nababu-card w-full max-w-md rounded-3xl p-8 border">
+        <h1 class="text-3xl font-black text-center tracking-tighter mb-1 italic">NABABU VORTEX</h1>
+        <p class="text-[10px] text-center tracking-[0.4em] opacity-60 mb-6 text-white uppercase">High-Speed Liquidity Mixer</p>
 
-        <div id="dep-ui" class="space-y-4">
-            <button id="btnGen" onclick="genereazaBilet()" class="btn-vortex w-full py-4 rounded-xl shadow-lg">Generate Deposit Ticket</button>
-            <div id="res-gen" class="hidden p-5 bg-black/60 border border-[#00ffcc]/30 rounded-2xl space-y-3">
-                <div>
-                    <p class="text-[9px] opacity-50 uppercase mb-1">Secure Deposit Address:</p>
-                    <div id="adrDep" class="font-bold text-white break-all bg-[#00ffcc]/5 p-3 rounded-lg border border-[#00ffcc]/10 text-xs text-center"></div>
-                </div>
-                <div>
-                    <p class="text-[9px] opacity-50 uppercase mb-1 text-yellow-500 text-center font-bold">Secret Code (Keep it safe!):</p>
-                    <div id="codSecret" class="font-black text-yellow-400 text-center text-xl bg-yellow-400/5 p-3 rounded-lg border border-yellow-400/20 tracking-wider font-bold"></div>
-                </div>
+        <div class="ant-colony mb-6 flex flex-col items-center justify-center">
+            <div id="ant-msg" class="text-[10px] uppercase font-bold text-white/50 mb-2">Ants Status: Idle</div>
+            <div id="ant-track" class="w-full relative h-8">
+                <span class="absolute left-1/4 opacity-30">🐜</span>
+                <span class="absolute left-2/4 opacity-30">🐜</span>
+                <span class="absolute left-3/4 opacity-30">🐜</span>
             </div>
         </div>
 
-        <div class="my-8 border-t border-[#00ffcc]/10"></div>
-
-        <div class="space-y-4 bg-[#00ffcc]/5 p-5 rounded-2xl border border-[#00ffcc]/10">
-            <h3 class="text-center text-[10px] tracking-widest opacity-60 font-bold uppercase text-bold italic">Blockchain Monitor</h3>
-            <input type="text" id="statusCod" placeholder="ENTER SECRET CODE" class="w-full p-3 bg-black border border-[#00ffcc]/30 rounded-xl text-center text-[#00ffcc] outline-none">
-            <button onclick="checkStatus()" class="w-full py-2 border border-[#00ffcc]/50 text-[#00ffcc] hover:bg-[#00ffcc] hover:text-black transition-all rounded-xl font-bold text-[10px]">SCAN DEPOSIT STATUS</button>
-            <div id="statusResult" class="hidden text-center p-2 rounded-lg font-bold text-xs"></div>
+        <div id="dep-ui" class="space-y-4">
+            <button onclick="genereazaBilet()" class="btn-gold w-full py-4 shadow-lg">Generate Deposit Ticket</button>
+            <div id="res-gen" class="hidden p-5 bg-black/40 border border-[#f1c40f]/20 rounded-2xl space-y-3">
+                <p class="text-[9px] opacity-50 uppercase text-center text-white">Deposit ETH to:</p>
+                <div id="adrDep" class="font-mono text-white break-all bg-white/5 p-3 rounded-lg border border-white/10 text-[10px] text-center"></div>
+                <p class="text-[9px] opacity-50 uppercase text-center text-yellow-500 font-bold">Secret Ticket Code (Save it!):</p>
+                <div id="codSecret" class="font-black text-yellow-400 text-center text-xl tracking-widest"></div>
+            </div>
         </div>
 
-        <div class="my-8 border-t border-[#00ffcc]/10"></div>
+        <div class="my-6 border-t border-white/5"></div>
+
+        <div class="space-y-3 bg-white/5 p-5 rounded-2xl">
+            <h3 class="text-center text-[10px] tracking-widest opacity-60 font-bold uppercase italic text-white">Live Monitor</h3>
+            <input type="text" id="statusCod" placeholder="ENTER SECRET CODE" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center text-[#f1c40f] outline-none text-sm font-bold">
+            <button onclick="checkStatus()" class="w-full py-2 border border-[#f1c40f]/30 text-[#f1c40f] hover:bg-[#f1c40f] hover:text-black transition-all rounded-xl font-bold text-[10px] uppercase">Scan Status</button>
+            <div id="statusResult" class="hidden text-center p-2 rounded-lg font-bold text-[10px]"></div>
+        </div>
+
+        <div class="my-6 border-t border-white/5"></div>
 
         <div class="space-y-4">
-            <h3 class="text-center text-[10px] tracking-widest opacity-60 font-bold uppercase text-bold italic">Withdrawal Protocol</h3>
-            <input type="text" id="inputCod" placeholder="DIAMOND-XXXX CODE" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center outline-none">
+            <h3 class="text-center text-[10px] tracking-widest opacity-60 font-bold uppercase italic text-white">Withdrawal Protocol</h3>
+            <input type="text" id="inputCod" placeholder="TICKET CODE (NABABU-XXXX)" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center outline-none text-sm font-bold">
             <input type="text" id="inputDest" placeholder="DESTINATION ETH ADDRESS (BASE)" class="w-full p-3 bg-black border border-white/10 rounded-xl text-center outline-none text-[10px]">
-            <button id="btnRetrage" onclick="retrageBani()" class="btn-vortex w-full py-4 rounded-xl">Lansare Furnici (Send)</button>
-            <p id="msgRet" class="text-center text-[10px] mt-2 font-bold"></p>
+            <button id="btnRetrage" onclick="retrageBani()" class="btn-gold w-full py-4 rounded-xl">Launch Ants (Mix Funds)</button>
+            <p id="msgRet" class="text-center text-[10px] mt-2 font-bold text-white/40"></p>
         </div>
     </div>
 
     <script>
-    const API_URL = "https://api.nababu.io";
-    const HEADERS = {
-        'Content-Type': 'application/json',
-        'localtonet-skip-warning': 'true'
-    };
+        const API_URL = "https://api.nababu.io";
 
-    // 1. GENERARE BILET
-    async function genereazaBilet() {
-        const btn = document.getElementById('btnGen');
-        btn.innerText = "CONNECTING...";
-        try {
-            const res = await fetch(`${API_URL}/genereaza`, {
-                method: 'GET',
-                headers: HEADERS
-            });
-            if (!res.ok) throw new Error("Server error");
-            const data = await res.json();
-            
-            document.getElementById('adrDep').innerText = data.adresa;
-            document.getElementById('codSecret').innerText = data.cod;
-            document.getElementById('res-gen').classList.remove('hidden');
-            btn.style.display = "none";
-        } catch (e) { 
-            console.error(e);
-            alert("CONEXIUNE EȘUATĂ! Verifică VPS-ul."); 
-            btn.innerText = "RETRY GENERATION";
-        }
-    }
-
-    // 2. VERIFICARE STATUS
-    async function checkStatus() {
-        const parola = document.getElementById('statusCod').value.trim();
-        const resDiv = document.getElementById('statusResult');
-        if (!parola) return;
-        
-        resDiv.classList.remove('hidden');
-        resDiv.innerHTML = "<span class='text-white'>SCANNING BASE NETWORK...</span>";
-        
-        try {
-            const res = await fetch(`${API_URL}/status`, {
-                method: 'POST',
-                headers: HEADERS,
-                body: JSON.stringify({ parola })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                resDiv.innerHTML = `STATUS: <span style="color:#00ffcc">${data.status}</span><br>SUM: ${data.suma} ETH`;
-            } else {
-                resDiv.innerHTML = `<span style="color:#ff4444">INVALID CODE</span>`;
+        // Logic for Ant Animation
+        function updateAnts(status) {
+            const msg = document.getElementById('ant-msg');
+            const track = document.getElementById('ant-track');
+            if(status === 'detected' || status === 'confirmed') {
+                msg.innerText = "Ants Status: Processing Assets 🚀";
+                track.innerHTML = '<span class="working-ant">🐜</span><span class="working-ant" style="animation-delay: 1s">🐜</span>';
+            } else if(status === 'success') {
+                msg.innerText = "Ants Status: Delivery Complete! 🎉";
+                track.innerHTML = '<div class="text-center text-xl">🥂💎</div>';
             }
-        } catch (e) { 
-            resDiv.innerHTML = `<span style="color:#ff4444">SERVER ERROR</span>`;
         }
-    }
 
-    // 3. RETRAGERE
-    async function retrageBani() {
-        const parola = document.getElementById('inputCod').value;
-        const adresaDestinatie = document.getElementById('inputDest').value;
-        const msg = document.getElementById('msgRet');
-        msg.innerText = "INITIALIZING MIXER...";
-        try {
-            const res = await fetch(`${API_URL}/retragere`, {
-                method: 'POST',
-                headers: HEADERS,
-                body: JSON.stringify({ parola, adresaDestinatie })
-            });
-            const data = await res.json();
-            msg.innerText = res.ok ? "SUCCESS! Funds are being mixed." : "ERROR: " + data.eroare;
-        } catch (e) { 
-            msg.innerText = "Connection error."; 
+        async function genereazaBilet() {
+            try {
+                const res = await fetch(`${API_URL}/api/generate-ticket`);
+                const data = await res.json();
+                document.getElementById('res-gen').classList.remove('hidden');
+                document.getElementById('adrDep').innerText = data.address;
+                document.getElementById('codSecret').innerText = data.ticket;
+            } catch(e) { alert("Connection Error. Check API."); }
         }
-    }
-</script>
+
+        async function checkStatus() {
+            const code = document.getElementById('statusCod').value;
+            const resDiv = document.getElementById('statusResult');
+            try {
+                const res = await fetch(`${API_URL}/api/status/${code}`);
+                const data = await res.json();
+                resDiv.classList.remove('hidden');
+                resDiv.innerText = `STATUS: ${data.status.toUpperCase()} | AMOUNT: ${data.amount} ETH`;
+                resDiv.style.color = data.status === 'detected' ? '#f1c40f' : '#fff';
+                updateAnts(data.status);
+            } catch(e) { resDiv.innerText = "CODE NOT FOUND"; }
+        }
+
+        async function retrageBani() {
+            const b = document.getElementById('btnRetrage');
+            const m = document.getElementById('msgRet');
+            const ticket = document.getElementById('inputCod').value;
+            const dest = document.getElementById('inputDest').value;
+
+            b.disabled = true;
+            m.innerText = "INITIATING ANTS PROTOCOL...";
+            
+            try {
+                const res = await fetch(`${API_URL}/api/withdraw`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticket, destination: dest })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    m.innerText = "SUCCESS! ASSETS LAUNCHED.";
+                    updateAnts('success');
+                } else {
+                    m.innerText = "ERROR: " + data.error;
+                    b.disabled = false;
+                }
+            } catch(e) { 
+                m.innerText = "CONNECTION FAILED."; 
+                b.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
