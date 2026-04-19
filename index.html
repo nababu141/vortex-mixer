@@ -46,151 +46,45 @@
 </head>
 <body>
 
-<div class="container">
-    <h1>NABABU</h1>
+<div class="main-layout" style="display: flex; justify-content: center; align-items: flex-start; gap: 30px; padding: 40px; flex-wrap: wrap;">
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
-        <button class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
+    <div class="side-panel" style="width: 250px; background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; font-size: 11px; line-height: 1.6;">
+        <h4 style="color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 15px;">How it Works</h4>
+        <p><b style="color: #f1f5f9;">1. Generate:</b> Create a unique, non-custodial vault address on the BASE network.</p>
+        <p><b style="color: #f1f5f9;">2. Deposit:</b> Send ETH to your vault. The funds are mixed within our liquidity pool.</p>
+        <p><b style="color: #f1f5f9;">3. Anonymize:</b> Your transaction history is detached from your identity.</p>
+        <p><b style="color: #f1f5f9;">4. Withdraw:</b> Use your Private Key to send funds to a new, clean address.</p>
     </div>
 
-    <div id="deposit" class="card active">
-        <h3>01 Access Generation</h3>
-        <button class="main-btn" onclick="generateAccess()">Generate Vault Key</button>
+    <div class="container" style="width: 100%; max-width: 500px; background: #0f172a; padding: 30px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+        <h1>NABABU</h1>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
+            <button class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
+        </div>
 
-        <div id="result-area" style="display: none; margin-top: 25px;">
-            <div class="data-display">
-                <span class="label-text">Deposit Address (BASE Network)</span>
-                <div class="copy-row">
-                    <span id="adrText" class="address-text">0x...</span>
-                    <button class="copy-btn" onclick="copy('adrText')">📋 COPY</button>
-                </div>
-            </div>
+        <div id="deposit" class="card active">...</div>
+        <div id="withdraw" class="card">...</div>
+        <div class="log" id="terminalLog">...</div>
+    </div>
 
-            <div class="data-display">
-                <span class="label-text">Private Access Key (Save This)</span>
-                <div class="copy-row">
-                    <span id="codText" class="code-text">NABABU-XXXX</span>
-                    <button class="copy-btn" onclick="copy('codText')">📋 COPY</button>
-                </div>
-            </div>
-
-            <div class="warning-box">
-                ⚠️ <strong>WARNING:</strong> Send ETH only via the <strong>BASE</strong> network. 
-                Any other network will result in permanent loss of funds. 
-            </div>
-
-            <div class="status-bar">
-                <div id="statusLed"></div>
-                <span id="statusText" style="font-size: 11px; flex-grow: 1; color: #94a3b8;">AWAITING TRANSACTION...</span>
-                <button onclick="checkBalance()" style="background: transparent; border: 1px solid #4ade80; color: #4ade80; font-size: 10px; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-weight: bold;">SCAN BALANCE</button>
-            </div>
+    <div class="side-panel" style="width: 250px; background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; font-size: 11px;">
+        <h4 style="color: #fbbf24; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 15px;">System Specs</h4>
+        <div style="margin-bottom: 10px;">
+            <span style="color: #64748b;">Protocol Fee:</span> <span style="float: right; color: #f1f5f9;">0.5%</span>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span style="color: #64748b;">Network:</span> <span style="float: right; color: #38bdf8;">BASE (L2)</span>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span style="color: #64748b;">Privacy Level:</span> <span style="float: right; color: #10b981;">MIL-SPEC</span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 15px 0;">
+        <div style="color: #94a3b8; font-style: italic; font-size: 10px;">
+            "Wealth is not about having money, it's about having options." - Nababu Protocol
         </div>
     </div>
 
-    <div id="withdraw" class="card">
-        <h3>02 Finalize Protocol</h3>
-        <input type="text" id="inputCod" placeholder="Enter NABABU-XXXX Key">
-        <input type="text" id="inputDest" placeholder="Destination Address (ETH/BASE)">
-        <button class="main-btn" onclick="processWithdraw()">Withdraw Funds</button>
-    </div>
-
-    <div class="log" id="terminalLog">
-        <span style="color: #64748b;">>> Terminal initialized...</span><br>
-        <span style="color: #64748b;">>> System ready. Waiting for instructions...</span>
-    </div>
 </div>
-
-<script>
-    const API_URL = "https://api.nababu.io";
-
-    function showTab(id) {
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    function addLog(msg, color = "#10b981") {
-        const log = document.getElementById('terminalLog');
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        log.innerHTML += `<br><span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
-        log.scrollTop = log.scrollHeight;
-    }
-
-    async function generateAccess() {
-    addLog(">> Contacting Relay Network...", "#38bdf8");
-    try {
-        const res = await fetch(`${API_URL}/api/generate-ticket`);
-        const data = await res.json();
-        
-        document.getElementById('result-area').style.display = 'block';
-        document.getElementById('adrText').innerText = data.adresa;
-        
-        // FENTA: Îi arătăm NABABU- (pentru branding), dar codul real e cel din data.cod
-        document.getElementById('codText').innerText = "NABABU-" + data.cod;
-        
-        addLog('>> <span style="color:#00ffcc;">[SUCCESS]</span> Unique vault generated.', "#00ffcc");
-        // Aici în log scriem doar codul pur, fără brizbriz-uri
-        console.log("Internal System Log - Raw Ticket:", data.cod); 
-    } catch (e) {
-        addLog(">> [ERROR] Connection failed.", "#ef4444");
-    }
-}
-
-    function copy(id) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        addLog(`Copied to clipboard: ${text.substring(0, 15)}...`, "#38bdf8");
-    }
-
-    function checkBalance() {
-        const led = document.getElementById('statusLed');
-        const text = document.getElementById('statusText');
-        
-        led.style.background = '#fbbf24';
-        text.innerText = "SCANNING BLOCKCHAIN...";
-        addLog("Scanning BASE network for incoming deposits...", "#fbbf24");
-
-        setTimeout(() => {
-            led.style.background = '#ef4444';
-            text.innerText = "NO DEPOSIT DETECTED";
-            text.style.color = "#ef4444";
-            addLog("[WAITING] No confirmed transactions found.", "#ef4444");
-            
-            setTimeout(() => {
-                led.style.background = '#475569';
-                text.innerText = "AWAITING TRANSACTION...";
-                text.style.color = "#94a3b8";
-            }, 3000);
-        }, 2000);
-    }
-
-    function processWithdraw() {
-        const cod = document.getElementById('inputCod').value;
-        const dest = document.getElementById('inputDest').value;
-        
-        if(!cod || !dest) {
-            addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
-            return;
-        }
-
-        addLog(`>> Verifying Key ${cod}...`, "#38bdf8");
-        addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
-
-        // Simulăm procesarea timp de 4 secunde
-        setTimeout(() => {
-            addLog(">> [CHECK] Connection to relayer established.");
-            
-            setTimeout(() => {
-                // Verdictul: Nu sunt bani (pentru că e bilet nou)
-                addLog(">> [EMPTY] No funds found for this key yet.", "#ef4444");
-                addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
-            }, 2000);
-            
-        }, 2000);
-    }
-</script>
-
 </body>
 </html>
