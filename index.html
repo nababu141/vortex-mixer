@@ -164,11 +164,11 @@
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('adrText').innerText = data.adresa;
             
-            // Branding Unic: Doar NABABU-
-            document.getElementById('codText').innerText = "NABABU-" + data.cod;
+            // AICI AM MODIFICAT: Luăm codul exact așa cum vine de la robot (care are deja NABABU-)
+            document.getElementById('codText').innerText = data.cod;
             
             addLog('<span style="color:#00ffcc;">[SUCCESS]</span> Unique vault generated.', "#00ffcc");
-            addLog(">> Please save your NABABU key in a private place.", "#f1f5f9");
+            addLog(">> Please save your access key safely.", "#f1f5f9");
         } catch (e) {
             addLog(">> [ERROR] Connection failed.", "#ef4444");
         }
@@ -200,38 +200,35 @@
     }
 
     function processWithdraw() {
-    let rawInput = document.getElementById('inputCod').value.trim();
-    const dest = document.getElementById('inputDest').value.trim();
-    
-    // Transformăm automat în litere MARI ca să nu avem erori de scriere
-    let fullCod = rawInput.toUpperCase();
-    
-    if(!fullCod || !dest) {
-        addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
-        return;
-    }
-
-    addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
-
-    // Dacă userul a uitat să scrie NABABU-, îl adăugăm noi automat pentru verificare
-    if (!fullCod.startsWith("NABABU-")) {
-        fullCod = "NABABU-" + fullCod;
-    }
-
-    addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
-
-    setTimeout(() => {
-        addLog(">> [CHECK] Connection to relayer established.");
+        let rawInput = document.getElementById('inputCod').value.trim();
+        const dest = document.getElementById('inputDest').value.trim();
         
+        // Transformăm în litere MARI (userul poate scrie cum vrea, noi corectăm)
+        let fullCod = rawInput.toUpperCase();
+        
+        if(!fullCod || !dest) {
+            addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
+            return;
+        }
+
+        addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
+
+        // Verificăm dacă codul introdus începe cu ce am setat în robot
+        if (!fullCod.startsWith("NABABU-")) {
+            addLog(">> [AUTH_ERROR] Invalid Format. Key must start with 'NABABU-'.", "#ef4444");
+            return;
+        }
+
+        addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
+
         setTimeout(() => {
-            // Aici va fi interogarea REALA către VPS
-            // Momentan dăm verdictul pe baza logicii de test
-            addLog(">> [EMPTY] No funds found for this key yet.", "#ef4444");
-            addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
+            addLog(">> [CHECK] Connection to relayer established.");
+            setTimeout(() => {
+                addLog(">> [EMPTY] No funds found for this key yet.", "#ef4444");
+                addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
+            }, 2000);
         }, 2000);
-        
-    }, 2000);
-}
+    }
 </script>
 
 </body>
