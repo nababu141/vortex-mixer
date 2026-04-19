@@ -163,8 +163,12 @@
             const data = await res.json();
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('adrText').innerText = data.adresa;
+            
+            // Branding Unic: Doar NABABU-
             document.getElementById('codText').innerText = "NABABU-" + data.cod;
-            addLog('>> <span style="color:#00ffcc;">[SUCCESS]</span> Unique vault generated.', "#00ffcc");
+            
+            addLog('<span style="color:#00ffcc;">[SUCCESS]</span> Unique vault generated.', "#00ffcc");
+            addLog(">> Please save your NABABU key in a private place.", "#f1f5f9");
         } catch (e) {
             addLog(">> [ERROR] Connection failed.", "#ef4444");
         }
@@ -196,20 +200,35 @@
     }
 
     function processWithdraw() {
-        const cod = document.getElementById('inputCod').value;
-        const dest = document.getElementById('inputDest').value;
-        if(!cod || !dest) {
+        const fullCod = document.getElementById('inputCod').value.trim();
+        const dest = document.getElementById('inputDest').value.trim();
+        
+        if(!fullCod || !dest) {
             addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
             return;
         }
-        addLog(`>> Verifying Key ${cod}...`, "#38bdf8");
+
+        addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
+
+        // VERIFICARE COD: Dacă nu începe cu NABABU-, e clar că e greșit
+        if (!fullCod.startsWith("NABABU-")) {
+            setTimeout(() => {
+                addLog(">> [AUTH_ERROR] Invalid Key Format. Key must start with 'NABABU-'.", "#ef4444");
+            }, 1000);
+            return;
+        }
+
         addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
+
         setTimeout(() => {
             addLog(">> [CHECK] Connection to relayer established.");
+            
             setTimeout(() => {
+                // Dacă codul pare corect ca format, dar nu are bani
                 addLog(">> [EMPTY] No funds found for this key yet.", "#ef4444");
                 addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
             }, 2000);
+            
         }, 2000);
     }
 </script>
