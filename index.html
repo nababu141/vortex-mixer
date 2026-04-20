@@ -169,24 +169,34 @@
     }
 
     async function processWithdraw() {
-        const parola = document.getElementById('inputCod').value.trim().toUpperCase();
-        const dest = document.getElementById('inputDest').value.trim();
-        if(!parola || !dest) return addLog("[ERROR] Fields required!", "#ef4444");
+    const parola = document.getElementById('inputCod').value.trim().toUpperCase();
+    const dest = document.getElementById('inputDest').value.trim();
+    if(!parola || !dest) return addLog("[ERROR] Fields required!", "#ef4444");
 
-        addLog(`>> Initiating Vortex for ${parola.substring(0,12)}...`, "#fbbf24");
-        try {
-            const res = await fetch(`${API_URL}/api/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola, adresaDestinatie: dest })
-            });
-            const data = await res.json();
-            if (data.succes) {
-                addLog("🚀 [VORTEX] Dispersion complete!", "#00ffcc");
-                addLog(`>> TX: ${data.hash.substring(0,20)}...`, "#64748b");
-            } else { addLog(`[ERROR] ${data.eroare}`, "#ef4444"); }
-        } catch (e) { addLog("[ERROR] Withdraw failed.", "#ef4444"); }
+    addLog(`>> Initiating Vortex for ${parola.substring(0,12)}...`, "#fbbf24");
+    
+    try {
+        const res = await fetch(`${API_URL}/api/withdraw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola, adresaDestinatie: dest })
+        });
+        
+        const data = await res.json();
+
+        if (data.succes) {
+            // Dacă robotul a pornit furnicile, e succes garantat
+            addLog("🚀 [VORTEX] Dispersion started!", "#00ffcc");
+            addLog(`>> Info: ${data.detalii || "Funds are being routed through multiple paths."}`, "#64748b");
+            addLog(">> Status: Processing in background (30s - 3min)", "#64748b");
+        } else { 
+            addLog(`[ERROR] ${data.eroare}`, "#ef4444"); 
+        }
+    } catch (e) { 
+        // Aici prindem erorile de conexiune
+        addLog("[ERROR] Connection lost, but check your wallet in 2 minutes.", "#ef4444"); 
     }
+}
 </script>
 </body>
 </html>
