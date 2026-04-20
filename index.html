@@ -153,68 +153,23 @@
 </div>
 
 <script>
-    const API_URL = "https://api.nababu.io"; 
+    const API_URL = "https://api.nababu.io";
 
-async function processWithdraw() {
-    let rawInput = document.getElementById('inputCod').value.trim();
-    const dest = document.getElementById('inputDest').value.trim();
-    let fullCod = rawInput.toUpperCase();
-    
-    if(!fullCod || !dest) {
-        addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
-        return;
-    }
-
-    addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
-    addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
-
-    try {
-        // 1. Întrebăm robotul de statusul biletului
-        const resStatus = await fetch(`${API_URL}/api/status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola: fullCod })
-        });
-        const dataStatus = await resStatus.json();
-
-        if (dataStatus.status === "CONFIRMED") {
-            addLog(`>> [SUCCESS] Balance found: ${dataStatus.suma} ETH`, "#10b981");
-            addLog(`>> Initiating Vortex Anonymization...`, "#10b981");
-
-            // 2. Dacă sunt bani, pornim retragerea
-            const resWithdraw = await fetch(`${API_URL}/api/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola: fullCod, adresaDestinatie: dest })
-            });
-            const dataWithdraw = await resWithdraw.json();
-
-            if (dataWithdraw.succes) {
-                addLog(">> [VORTEX] Funds sent to mixer. Check your destination wallet.", "#00ffcc");
-            } else {
-                addLog(`>> [ERROR] ${dataWithdraw.eroare}`, "#ef4444");
-            }
-        } else {
-            addLog(">> [EMPTY] No funds found for this key in the database.", "#ef4444");
-            addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
-        }
-    } catch (e) {
-        addLog(">> [ERROR] Could not connect to robot API.", "#ef4444");
-    }
-}
-
-// Reparăm și butonul de check status (becul)
-const API_URL = "https://api.nababu.io"; // Folosim domeniul tău securizat
-
+// Funcția care aprinde becul (SCAN)
 async function checkBalance() {
     const parola = document.getElementById('inputCod').value.trim().toUpperCase();
     const led = document.getElementById('statusLed');
     const text = document.getElementById('statusText');
 
-    if(!parola) return;
+    if(!parola) {
+        addLog("[ERROR] Introdu codul pentru scanare!", "#ef4444");
+        return;
+    }
 
-    led.style.background = '#fbbf24'; // Galben (Scanning)
-    
+    led.style.background = '#fbbf24'; // Galben - Scanning
+    text.innerText = "SCANNING VORTEX DB...";
+    addLog("🔎 Searching Vortex database for confirmed deposits...", "#fbbf24");
+
     try {
         const res = await fetch(`${API_URL}/api/status`, {
             method: 'POST',
@@ -226,13 +181,51 @@ async function checkBalance() {
         if (data.status === "CONFIRMED") {
             led.style.background = '#10b981'; // Verde
             text.innerText = `CONFIRMED: ${data.suma} ETH`;
-            addLog(`[SUCCESS] Deposit of ${data.suma} ETH verified!`, "#10b981");
+            text.style.color = "#10b981";
+            addLog(`✅ [SUCCESS] Depozit găsit: ${data.suma} ETH`, "#10b981");
         } else {
             led.style.background = '#ef4444'; // Roșu
             text.innerText = "NO DEPOSIT FOUND";
+            text.style.color = "#ef4444";
+            addLog("❌ [WAITING] Niciun depozit confirmat în baza de date.", "#ef4444");
         }
     } catch (e) {
-        addLog(">> [ERROR] Connection to api.nababu.io failed.", "#ef4444");
+        addLog("⚠️ [ERROR] Nu pot contacta API-ul. Verifică conexiunea.", "#ef4444");
+    }
+}
+
+// Funcția pentru Retragere (WITHDRAW)
+async function processWithdraw() {
+    const rawInput = document.getElementById('inputCod').value.trim();
+    const dest = document.getElementById('inputDest').value.trim();
+    const fullCod = rawInput.toUpperCase();
+    
+    if(!fullCod || !dest) {
+        addLog("[ERROR] Codul și adresa de destinație sunt obligatorii!", "#ef4444");
+        return;
+    }
+
+    addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
+
+    try {
+        const res = await fetch(`${API_URL}/api/withdraw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                parola: fullCod, 
+                adresaDestinatie: dest 
+            })
+        });
+        const data = await res.json();
+
+        if (data.succes) {
+            addLog("🚀 [VORTEX] Banii au fost trimiși către mixer!", "#00ffcc");
+            addLog(`🔗 Hash: ${data.hash.substring(0, 20)}...`, "#64748b");
+        } else {
+            addLog(`❌ [WITHDRAW_ERROR] ${data.eroare}`, "#ef4444");
+        }
+    } catch (e) {
+        addLog("⚠️ [ERROR] Serverul de retrageri nu răspunde.", "#ef4444");
     }
 }
 </script>
