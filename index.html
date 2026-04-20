@@ -153,95 +153,88 @@
 </div>
 
 <script>
-    const API_URL = "https://api.nababu.io";
+    const API_URL = "https://api.nababu.io"; 
 
-    function showTab(id) {
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
+async function processWithdraw() {
+    let rawInput = document.getElementById('inputCod').value.trim();
+    const dest = document.getElementById('inputDest').value.trim();
+    let fullCod = rawInput.toUpperCase();
+    
+    if(!fullCod || !dest) {
+        addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
+        return;
     }
 
-    function addLog(msg, color = "#10b981") {
-        const log = document.getElementById('terminalLog');
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        log.innerHTML += `<br><span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
-        log.scrollTop = log.scrollHeight;
-    }
+    addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
+    addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
 
-    async function generateAccess() {
-        addLog(">> Contacting Relay Network...", "#38bdf8");
-        try {
-            const res = await fetch(`${API_URL}/api/generate-ticket`);
-            const data = await res.json();
-            document.getElementById('result-area').style.display = 'block';
-            document.getElementById('adrText').innerText = data.adresa;
-            
-            // AICI AM MODIFICAT: Luăm codul exact așa cum vine de la robot (care are deja NABABU-)
-            document.getElementById('codText').innerText = data.cod;
-            
-            addLog('<span style="color:#00ffcc;">[SUCCESS]</span> Unique vault generated.', "#00ffcc");
-            addLog(">> Please save your access key safely.", "#f1f5f9");
-        } catch (e) {
-            addLog(">> [ERROR] Connection failed.", "#ef4444");
+    try {
+        // 1. Întrebăm robotul de statusul biletului
+        const resStatus = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola: fullCod })
+        });
+        const dataStatus = await resStatus.json();
+
+        if (dataStatus.status === "CONFIRMED") {
+            addLog(`>> [SUCCESS] Balance found: ${dataStatus.suma} ETH`, "#10b981");
+            addLog(`>> Initiating Vortex Anonymization...`, "#10b981");
+
+            // 2. Dacă sunt bani, pornim retragerea
+            const resWithdraw = await fetch(`${API_URL}/api/withdraw`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola: fullCod, adresaDestinatie: dest })
+            });
+            const dataWithdraw = await resWithdraw.json();
+
+            if (dataWithdraw.succes) {
+                addLog(">> [VORTEX] Funds sent to mixer. Check your destination wallet.", "#00ffcc");
+            } else {
+                addLog(`>> [ERROR] ${dataWithdraw.eroare}`, "#ef4444");
+            }
+        } else {
+            addLog(">> [EMPTY] No funds found for this key in the database.", "#ef4444");
+            addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
         }
+    } catch (e) {
+        addLog(">> [ERROR] Could not connect to robot API.", "#ef4444");
     }
+}
 
-    function copy(id) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        addLog(`Copied to clipboard: ${text.substring(0, 15)}...`, "#38bdf8");
-    }
+// Reparăm și butonul de check status (becul)
+const API_URL = "https://api.nababu.io"; // Folosim domeniul tău securizat
 
-    function checkBalance() {
-        const led = document.getElementById('statusLed');
-        const text = document.getElementById('statusText');
-        led.style.background = '#fbbf24';
-        text.innerText = "SCANNING BLOCKCHAIN...";
-        addLog("Scanning BASE network for incoming deposits...", "#fbbf24");
-        setTimeout(() => {
-            led.style.background = '#ef4444';
-            text.innerText = "NO DEPOSIT DETECTED";
-            text.style.color = "#ef4444";
-            addLog("[WAITING] No confirmed transactions found.", "#ef4444");
-            setTimeout(() => {
-                led.style.background = '#475569';
-                text.innerText = "AWAITING TRANSACTION...";
-                text.style.color = "#94a3b8";
-            }, 3000);
-        }, 2000);
-    }
+async function checkBalance() {
+    const parola = document.getElementById('inputCod').value.trim().toUpperCase();
+    const led = document.getElementById('statusLed');
+    const text = document.getElementById('statusText');
 
-    function processWithdraw() {
-        let rawInput = document.getElementById('inputCod').value.trim();
-        const dest = document.getElementById('inputDest').value.trim();
-        
-        // Transformăm în litere MARI (userul poate scrie cum vrea, noi corectăm)
-        let fullCod = rawInput.toUpperCase();
-        
-        if(!fullCod || !dest) {
-            addLog("[ERROR] Vault Key and Destination Address required!", "#ef4444");
-            return;
+    if(!parola) return;
+
+    led.style.background = '#fbbf24'; // Galben (Scanning)
+    
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola: parola })
+        });
+        const data = await res.json();
+
+        if (data.status === "CONFIRMED") {
+            led.style.background = '#10b981'; // Verde
+            text.innerText = `CONFIRMED: ${data.suma} ETH`;
+            addLog(`[SUCCESS] Deposit of ${data.suma} ETH verified!`, "#10b981");
+        } else {
+            led.style.background = '#ef4444'; // Roșu
+            text.innerText = "NO DEPOSIT FOUND";
         }
-
-        addLog(`>> Verifying Key ${fullCod}...`, "#38bdf8");
-
-        // Verificăm dacă codul introdus începe cu ce am setat în robot
-        if (!fullCod.startsWith("NABABU-")) {
-            addLog(">> [AUTH_ERROR] Invalid Format. Key must start with 'NABABU-'.", "#ef4444");
-            return;
-        }
-
-        addLog(">> Initiating balance scan on BASE mainnet...", "#fbbf24");
-
-        setTimeout(() => {
-            addLog(">> [CHECK] Connection to relayer established.");
-            setTimeout(() => {
-                addLog(">> [EMPTY] No funds found for this key yet.", "#ef4444");
-                addLog(">> Status: Awaiting deposit confirmation.", "#64748b");
-            }, 2000);
-        }, 2000);
+    } catch (e) {
+        addLog(">> [ERROR] Connection to api.nababu.io failed.", "#ef4444");
     }
+}
 </script>
 
 </body>
