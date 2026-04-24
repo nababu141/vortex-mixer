@@ -142,43 +142,46 @@
     }
 
     async function checkBalance() {
-        let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
-        const led = document.getElementById('statusLed');
-        const text = document.getElementById('statusText');
-        
-        if(!parola || parola.includes("XXXX")) return addLog("[ERROR] No Key provided.", "#ef4444");
+    let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
+    const led = document.getElementById('statusLed');
+    const text = document.getElementById('statusText');
+    
+    if(!parola || parola.includes("XXXX")) return addLog("[ERROR] No Key provided.", "#ef4444");
 
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola: parola.toUpperCase() })
-            });
-            const data = await res.json();
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola: parola.toUpperCase() })
+        });
+        const data = await res.json();
+        
+        if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
+            led.style.background = '#10b981';
+            text.innerText = `${data.status}: ${data.suma} ETH`;
             
-            if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
-                led.style.background = '#10b981';
-                text.innerText = `${data.status}: ${data.suma} ETH`;
-                
-                // Dacă avem furnici, le afișăm detaliat
-                if (data.furnici && data.furnici.length > 0) {
-                    addLog(`>> Vortex Status [${parola.substring(0,10)}...]:`, "#38bdf8");
-                    data.furnici.forEach((f, i) => {
-                        const icon = f.livrat ? "✅ [LIVRAT]" : "🐜 [ÎN MARȘ]";
-                        const color = f.livrat ? "#10b981" : "#fbbf24";
-                        const info = f.livrat ? "" : ` (ETA: ${f.minute} min)`;
-                        addLog(`${icon} Furnica ${f.index}${info}`, color);
-                    });
-                } else if (data.status === "CONFIRMED") {
-                    addLog(`[READY] Vault contains ${data.suma} ETH. Awaiting Vortex...`, "#10b981");
-                }
-            } else {
-                led.style.background = '#ef4444';
-                text.innerText = "NO DEPOSIT";
-                addLog("[EMPTY] No funds detected.", "#ef4444");
+            if (data.status === "PROCESSING") {
+                addLog(`>> Vortex Active [Fee: ${data.taxa}%]`, "#38bdf8");
             }
-        } catch (e) { addLog("[ERROR] Status check failed.", "#ef4444"); }
-    }
+
+            if (data.furnici && data.furnici.length > 0) {
+                data.furnici.forEach((f, i) => {
+                    const icon = f.livrat ? "✅ [DELIVERED]" : "🐜 [IN TRANSIT]";
+                    const color = f.livrat ? "#10b981" : "#fbbf24";
+                    const info = f.livrat ? "" : ` (ETA: ${f.minute} min)`;
+                    // Aici am tradus în Engleză:
+                    addLog(`${icon} Ant ${f.index}${info}`, color);
+                });
+            } else if (data.status === "CONFIRMED") {
+                addLog(`[READY] Vault contains ${data.suma} ETH. Awaiting Vortex...`, "#10b981");
+            }
+        } else {
+            led.style.background = '#ef4444';
+            text.innerText = "NO DEPOSIT";
+            addLog("[EMPTY] No funds detected.", "#ef4444");
+        }
+    } catch (e) { addLog("[ERROR] Status check failed.", "#ef4444"); }
+}
     
     async function processWithdraw() {
         const parola = document.getElementById('inputCod').value.trim().toUpperCase();
