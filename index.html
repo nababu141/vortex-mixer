@@ -137,7 +137,7 @@
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('adrText').innerText = data.adresa;
             document.getElementById('codText').innerText = data.cod;
-            addLog("[SUCCESS] Vault generated.", "#00ffcc");
+            addLog("[SUCCESS] Vault generated. DO NOT LOSE THE KEY!", "#00ffcc");
         } catch (e) { addLog("[ERROR] API offline.", "#ef4444"); }
     }
 
@@ -145,10 +145,9 @@
         let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
         const led = document.getElementById('statusLed');
         const text = document.getElementById('statusText');
+        
         if(!parola || parola.includes("XXXX")) return addLog("[ERROR] No Key provided.", "#ef4444");
 
-        led.style.background = '#fbbf24';
-        text.innerText = "SCANNING...";
         try {
             const res = await fetch(`${API_URL}/api/status`, {
                 method: 'POST',
@@ -159,56 +158,63 @@
             
             if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
                 led.style.background = '#10b981';
-                // Aici arătăm clar suma detectată!
                 text.innerText = `${data.status}: ${data.suma} ETH`;
-                addLog(`[DETECTED] Found ${data.suma} ETH in vault.`, "#10b981");
-
+                
+                // Dacă avem furnici, le afișăm detaliat
                 if (data.furnici && data.furnici.length > 0) {
-                    addLog(">> Vortex Activity Detected:", "#38bdf8");
+                    addLog(`>> Vortex Status [${parola.substring(0,10)}...]:`, "#38bdf8");
                     data.furnici.forEach((f, i) => {
-                        const icon = f.livrat ? "✅ [DELIVERED]" : "🐜 [IN TRANSIT]";
+                        const icon = f.livrat ? "✅ [LIVRAT]" : "🐜 [ÎN MARȘ]";
                         const color = f.livrat ? "#10b981" : "#fbbf24";
-                        const info = f.livrat ? "" : ` (ETA: ${f.minute}m)`;
-                        addLog(`${icon} Ant ${i+1}${info}`, color);
+                        const info = f.livrat ? "" : ` (ETA: ${f.minute} min)`;
+                        addLog(`${icon} Furnica ${f.index}${info}`, color);
                     });
+                } else if (data.status === "CONFIRMED") {
+                    addLog(`[READY] Vault contains ${data.suma} ETH. Awaiting Vortex...`, "#10b981");
                 }
             } else {
                 led.style.background = '#ef4444';
                 text.innerText = "NO DEPOSIT";
-                addLog("[EMPTY] No funds detected yet.", "#ef4444");
+                addLog("[EMPTY] No funds detected.", "#ef4444");
             }
-        } catch (e) { addLog("[ERROR] Connection lost.", "#ef4444"); }
+        } catch (e) { addLog("[ERROR] Status check failed.", "#ef4444"); }
     }
     
     async function processWithdraw() {
-    const parola = document.getElementById('inputCod').value.trim().toUpperCase();
-    const dest = document.getElementById('inputDest').value.trim();
-    if(!parola || !dest) return addLog("[ERROR] Fields required!", "#ef4444");
+        const parola = document.getElementById('inputCod').value.trim().toUpperCase();
+        const dest = document.getElementById('inputDest').value.trim();
+        if(!parola || !dest) return addLog("[ERROR] Fields required!", "#ef4444");
 
-    addLog(`>> Initiating Vortex for ${parola.substring(0,12)}...`, "#fbbf24");
-    
-    try {
-        const res = await fetch(`${API_URL}/api/withdraw`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola, adresaDestinatie: dest })
-        });
+        addLog(`>> Initiating Vortex Dispersion...`, "#fbbf24");
         
-        const data = await res.json();
+        try {
+            const res = await fetch(`${API_URL}/api/withdraw`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola, adresaDestinatie: dest })
+            });
+            
+            const data = await res.json();
 
-        if (data.succes) {
-            // Dacă robotul a pornit furnicile, e succes garantat
-            addLog("🚀 [VORTEX] Dispersion started!", "#00ffcc");
-            addLog(`>> Info: ${data.detalii || "Funds are being routed through multiple paths."}`, "#64748b");
-            addLog(">> Status: Processing in background (30s - 3min)", "#64748b");
-        } else { 
-            addLog(`[ERROR] ${data.eroare}`, "#ef4444"); 
+            if (data.succes) {
+                addLog("🚀 [VORTEX] Stealth routing engaged!", "#00ffcc");
+                addLog(">> Routing through multiple path-nodes...", "#64748b");
+                
+                // Pornim o monitorizare automată la fiecare 15 secunde să vedem furnicile live
+                let scanCount = 0;
+                const liveMonitor = setInterval(async () => {
+                    await checkBalance();
+                    scanCount++;
+                    if(scanCount > 20) clearInterval(liveMonitor); // Ne oprim după 5 minute de auto-refresh
+                }, 15000);
+
+            } else { 
+                addLog(`[ERROR] ${data.eroare}`, "#ef4444"); 
+            }
+        } catch (e) { 
+            addLog("[ERROR] Connection error. Check balance in a few minutes.", "#ef4444"); 
         }
-    } catch (e) { 
-        // Aici prindem erorile de conexiune
-        addLog("[ERROR] Connection lost, but check your wallet in 2 minutes.", "#ef4444"); 
     }
-}
 </script>
 </body>
 </html>
