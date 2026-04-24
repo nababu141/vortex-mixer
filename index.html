@@ -157,29 +157,29 @@
             });
             const data = await res.json();
             
-            if (data.status === "CONFIRMED" || data.status === "WITHDRAW_REQUESTED" || data.status === "PROCESSING") {
+            if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
                 led.style.background = '#10b981';
+                // Aici arătăm clar suma detectată!
                 text.innerText = `${data.status}: ${data.suma} ETH`;
-                addLog(`[SYSTEM] Account: ${data.status}`, "#10b981");
+                addLog(`[DETECTED] Found ${data.suma} ETH in vault.`, "#10b981");
 
-                // --- LOGICĂ FURNIZICI ---
                 if (data.furnici && data.furnici.length > 0) {
-                    addLog(">> Detectată activitate furnici:", "#38bdf8");
+                    addLog(">> Vortex Activity Detected:", "#38bdf8");
                     data.furnici.forEach((f, i) => {
-                        const icon = f.livrat ? "✅ [LIVRAT]" : "🐜 [ÎN MARȘ]";
+                        const icon = f.livrat ? "✅ [DELIVERED]" : "🐜 [IN TRANSIT]";
                         const color = f.livrat ? "#10b981" : "#fbbf24";
                         const info = f.livrat ? "" : ` (ETA: ${f.minute}m)`;
-                        addLog(`${icon} Furnica ${i+1}${info}`, color);
+                        addLog(`${icon} Ant ${i+1}${info}`, color);
                     });
                 }
-                // ------------------------
             } else {
                 led.style.background = '#ef4444';
                 text.innerText = "NO DEPOSIT";
-                addLog("[EMPTY] No funds found.", "#ef4444");
+                addLog("[EMPTY] No funds detected yet.", "#ef4444");
             }
-        } catch (e) { addLog("[ERROR] Status check failed.", "#ef4444"); }
+        } catch (e) { addLog("[ERROR] Connection lost.", "#ef4444"); }
     }
+    
     async function processWithdraw() {
     const parola = document.getElementById('inputCod').value.trim().toUpperCase();
     const dest = document.getElementById('inputDest').value.trim();
