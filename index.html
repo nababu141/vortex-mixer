@@ -145,8 +145,9 @@
     let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
     const led = document.getElementById('statusLed');
     const text = document.getElementById('statusText');
+    const log = document.getElementById('terminalLog');
     
-    if(!parola || parola.includes("XXXX")) return addLog("[ERROR] No Key provided.", "#ef4444");
+    if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Enter a valid Ticket Code.", "#ef4444");
 
     try {
         const res = await fetch(`${API_URL}/api/status`, {
@@ -154,33 +155,43 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ parola: parola.toUpperCase() })
         });
+        
+        if (res.status === 404) {
+            led.style.background = '#ef4444';
+            text.innerText = "NOT FOUND";
+            return addLog("[ERROR] Ticket not found in database.", "#ef4444");
+        }
+
         const data = await res.json();
         
+        // Curățăm terminalul pentru a afișa starea curentă proaspătă
+        log.innerHTML = `<span style="color: #64748b;">>> Reconstructing session for ${parola.toUpperCase()}...</span>`;
+
         if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
             led.style.background = '#10b981';
             text.innerText = `${data.status}: ${data.suma} ETH`;
             
-            if (data.status === "PROCESSING") {
-                addLog(`>> Vortex Active [Fee: ${data.taxa}%]`, "#38bdf8");
-            }
+            addLog(`[SESS] Vault identified. Balance: ${data.suma} ETH`, "#10b981");
 
-            if (data.furnici && data.furnici.length > 0) {
-                data.furnici.forEach((f, i) => {
-                    const icon = f.livrat ? "✅ [DELIVERED]" : "🐜 [IN TRANSIT]";
-                    const color = f.livrat ? "#10b981" : "#fbbf24";
-                    const info = f.livrat ? "" : ` (ETA: ${f.minute} min)`;
-                    // Aici am tradus în Engleză:
-                    addLog(`${icon} Ant ${f.index}${info}`, color);
-                });
-            } else if (data.status === "CONFIRMED") {
-                addLog(`[READY] Vault contains ${data.suma} ETH. Awaiting Vortex...`, "#10b981");
+            if (data.status === "PROCESSING") {
+                addLog(`>> Vortex Active [System Fee: ${data.taxa}%]`, "#38bdf8");
+                if (data.furnici && data.furnici.length > 0) {
+                    data.furnici.forEach((f) => {
+                        const icon = f.livrat ? "✅ [DELIVERED]" : "🐜 [IN TRANSIT]";
+                        const color = f.livrat ? "#10b981" : "#fbbf24";
+                        const eta = f.livrat ? "" : ` (ETA: ${f.minute}m)`;
+                        addLog(`${icon} Ant ${f.index}${eta}`, color);
+                    });
+                }
+            } else {
+                addLog(">> Status: Awaiting Withdrawal Command.", "#38bdf8");
             }
         } else {
-            led.style.background = '#ef4444';
-            text.innerText = "NO DEPOSIT";
-            addLog("[EMPTY] No funds detected.", "#ef4444");
+            led.style.background = '#fbbf24';
+            text.innerText = "PENDING";
+            addLog("[WAIT] No funds detected on this vault yet.", "#fbbf24");
         }
-    } catch (e) { addLog("[ERROR] Status check failed.", "#ef4444"); }
+    } catch (e) { addLog("[ERROR] Connection to Relay failed.", "#ef4444"); }
 }
     
     async function processWithdraw() {
