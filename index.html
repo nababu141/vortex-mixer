@@ -61,6 +61,16 @@
             <h3>01 Access Generation</h3>
             <button class="main-btn" onclick="generateAccess()">Generate Vault Key</button>
             <div id="result-area" style="display: none; margin-top: 25px;">
+                
+                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid #fbbf24; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; border-left: 4px solid #fbbf24;">
+                    <p style="color: #fbbf24; font-weight: bold; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
+                        ⚠️ WARNING: USE BASE NETWORK ONLY
+                    </p>
+                    <p style="color: #cbd5e1; margin: 5px 0 0 0; font-size: 11px; line-height: 1.4;">
+                        Do not send via Ethereum Mainnet, BSC or Arbitrum.<br>
+                        Funds sent on other networks will be <b>PERMANENTLY LOST</b>.
+                    </p>
+                </div>
                 <div class="data-display">
                     <span class="label-text">Deposit Address (BASE Network)</span>
                     <div class="copy-row">
@@ -68,13 +78,15 @@
                         <button class="copy-btn" onclick="copy('adrText')">📋 COPY</button>
                     </div>
                 </div>
+
                 <div class="data-display">
-                    <span class="label-text">Private Access Key</span>
+                    <span class="label-text">Private Access Key (Save this!)</span>
                     <div class="copy-row">
                         <span id="codText" class="code-text">NABABU-XXXX</span>
                         <button class="copy-btn" onclick="copy('codText')">📋 COPY</button>
                     </div>
                 </div>
+
                 <div class="status-bar">
                     <div id="statusLed"></div>
                     <span id="statusText" style="font-size: 11px; flex-grow: 1; color: #94a3b8;">AWAITING TRANSACTION...</span>
