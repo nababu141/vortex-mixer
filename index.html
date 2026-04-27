@@ -119,43 +119,68 @@
 <div id="notification-area" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
 
 <script>
+    <script>
     const API_URL = "https://api.nababu.io";
 
     function showTab(id) {
+        // Verificăm dacă evenimentul există pentru a evita erori
+        if (window.event) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
     }
 
     function addLog(msg, color = "#10b981") {
         const log = document.getElementById('terminalLog');
+        const line = document.createElement('div'); // Creăm element nou pentru fluiditate
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        log.innerHTML += `<br><span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
-        log.scrollTop = log.scrollHeight;
+        
+        line.style.marginBottom = "4px";
+        line.innerHTML = `<span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
+        
+        log.appendChild(line); // Adăugăm la sfârșit (curge în jos)
+        log.scrollTop = log.scrollHeight; // Forțăm scroll-ul jos
     }
 
     function copy(id) {
         const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        addLog(`Copied: ${text.substring(0, 10)}...`, "#38bdf8");
+        navigator.clipboard.writeText(text).then(() => {
+            addLog(`Copied: ${text.substring(0, 15)}...`, "#38bdf8");
+        });
     }
 
     async function generateAccess() {
-        addLog(">> Connecting to Relay...", "#38bdf8");
+        const btn = event.currentTarget;
+        btn.disabled = true; // Evităm generarea multiplă prin click-uri repetate
+        
+        addLog(">> Connecting to Vortex Relay...", "#38bdf8");
         try {
             const res = await fetch(`${API_URL}/api/generate-ticket`);
             const data = await res.json();
-            document.getElementById('result-area').style.display = 'block';
-            document.getElementById('adrText').innerText = data.adresa;
-            document.getElementById('codText').innerText = data.cod;
-            addLog("[SUCCESS] Vault generated.", "#00ffcc");
-        } catch (e) { addLog("[ERROR] API offline.", "#ef4444"); }
+            
+            if (data.adresa && data.cod) {
+                document.getElementById('result-area').style.display = 'block';
+                document.getElementById('adrText').innerText = data.adresa;
+                document.getElementById('codText').innerText = data.cod;
+                
+                addLog(`[SUCCESS] Vault ${data.cod} generated.`, "#00ffcc");
+                addLog(">> Waiting for deposit on BASE network...", "#fbbf24");
+                
+                // Opțional: pornim verificarea automată la fiecare 10 secunde
+                setInterval(checkBalance, 10000);
+            }
+        } catch (e) { 
+            addLog("[ERROR] API offline. Check VPS connection.", "#ef4444"); 
+            btn.disabled = false;
+        }
     }
-
     async function checkBalance() {
-        let parolaElement = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
-        let parola = parolaElement.toUpperCase();
+        const inputVal = document.getElementById('inputCod').value.trim();
+        const textVal = document.getElementById('codText').innerText;
+        let parola = (inputVal || textVal).toUpperCase();
+
         const led = document.getElementById('statusLed');
         const text = document.getElementById('statusText');
         const log = document.getElementById('terminalLog');
@@ -170,96 +195,134 @@
             });
 
             if (res.status === 404) {
-                led.style.background = '#ef4444';
-                text.innerText = "NOT FOUND";
+                // Nu dăm log de eroare aici ca să nu umplem terminalul dacă userul scrie greșit
                 return;
             }
 
             const data = await res.json();
 
             if (data && data.status) {
-                log.innerHTML = `<span style="color: #64748b;">>> Reconstructing Session: ${parola}...</span>`;
+                const curStatus = data.status.toUpperCase();
+                const statusuriActive = ["CONFIRMED", "PROCESSING", "SENDING", "COMPLETED"];
                 
-                const statusuriValide = ["CONFIRMED", "PROCESSING", "COMPLETED", "SENDING"];
-                
-                if (statusuriValide.includes(data.status.toUpperCase())) {
+                if (statusuriActive.includes(curStatus)) {
                     led.style.background = '#10b981';
-                    text.innerText = `${data.status}: ${data.suma} ETH`;
+                    text.innerText = `${curStatus}: ${data.suma} ETH`;
                     
-                    addLog(`[SESS] Status: ${data.status}`, "#10b981");
-                    addLog(`[SESS] Balance: ${data.suma} ETH`, "#38bdf8");
+                    // Verificăm dacă mesajul de succes a fost deja afișat, să nu-l repetăm la infinit
+                    if (!log.innerText.includes(`Balance: ${data.suma}`)) {
+                        addLog(`[VORTEX] Active Session: ${parola}`, "#38bdf8");
+                        addLog(`[SESS] Balance Detected: ${data.suma} ETH`, "#10b981");
+                    }
 
                     if (data.furnici && data.furnici.length > 0) {
+                        // Afișăm doar furnicile care nu sunt deja afișate în terminal
                         data.furnici.forEach((f) => {
-                            const icon = f.livrat ? "✅" : "🐜";
-                            addLog(`${icon} Node ${f.index}: ${f.livrat ? 'DISPERSED' : 'WAITING'} (ETA: ${f.minute}m)`, f.livrat ? "#10b981" : "#fbbf24");
+                            const uniqueId = `Node ${f.index}:`;
+                            if (!log.innerText.includes(uniqueId) || (f.livrat && !log.innerText.includes(`DISPERSED`))) {
+                                const icon = f.livrat ? "✅" : "🐜";
+                                const col = f.livrat ? "#10b981" : "#fbbf24";
+                                const msg = f.livrat ? "DISPERSED" : "WAITING";
+                                addLog(`${icon} ${uniqueId} ${msg} (ETA: ${f.minute}m)`, col);
+                            }
                         });
-                    } else {
-                        addLog("🐜 [WAIT] Node 1 - Establishing stealth path...", "#fbbf24");
+                    } else if (curStatus === "CONFIRMED") {
+                        // Evităm repetarea mesajului de așteptare
+                        if (!log.innerText.includes("Establishing stealth path")) {
+                            addLog("🐜 [WAIT] Node 1 - Establishing stealth path...", "#fbbf24");
+                        }
                     }
+                    
+                    if (curStatus === "COMPLETED" && !log.innerText.includes("FINALIZED")) {
+                        addLog("🏆 [SUCCESS] All nodes finalized. Session closed.", "#00ffcc");
+                    }
+
                 } else {
                     led.style.background = '#fbbf24';
                     text.innerText = "WAITING";
-                    addLog("[WAIT] Scanning BASE blockchain for deposit...", "#fbbf24");
+                    if (!log.innerText.includes("Scanning BASE")) {
+                        addLog("[WAIT] Scanning BASE blockchain for deposit...", "#fbbf24");
+                    }
                 }
             }
         } catch (e) {
-            console.error("Eroare status:", e);
+            console.error("Eroare legătură API:", e);
         }
-    } // <--- AICI ERA ÎNCHIDEREA CARE LIPSEA!
-
+    }
     async function processWithdraw() {
-        // Luăm parola din input sau din textul generat
-        const parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
+        const inputVal = document.getElementById('inputCod').value.trim();
+        const textVal = document.getElementById('codText').innerText;
+        const parola = (inputVal || textVal).toUpperCase();
+        
         const dest = document.getElementById('inputDest').value.trim();
 
-        if(!parola || !dest || dest.length < 20) {
-            return addLog("[ERROR] Valid Destination Address required!", "#ef4444");
+        // Verificare lungime adresa (Base/ETH au 42 caractere)
+        if(!parola || !dest || dest.length < 40) {
+            return addLog("[ERROR] Valid BASE Destination Address required!", "#ef4444");
         }
 
-        addLog(">> Initiating Dispersion...", "#fbbf24");
+        const btn = event.currentTarget;
+        btn.disabled = true; // Blocăm butonul să nu se dea click de 10 ori
+
+        addLog(">> Connecting to Vortex Relayer...", "#38bdf8");
+        addLog(">> Initiating Stealth Dispersion...", "#fbbf24");
+        
         try {
             const res = await fetch(`${API_URL}/api/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parola, adresaDestinatie: dest })
             });
+            
             const data = await res.json();
+            
             if (data.succes) {
-                addLog("🚀 [VORTEX] Routing engaged!", "#00ffcc");
-                // Pornim verificarea automată la fiecare 10 secunde
-                setInterval(checkBalance, 10000);
+                addLog("🚀 [VORTEX] Routing engaged! Sequence authorized.", "#00ffcc");
+                addLog(">> Monitoring nodes for dispersal...", "#38bdf8");
+                
+                // Pornim verificarea automată imediat
+                checkBalance(); 
+                setInterval(checkBalance, 15000);
             } else { 
-                addLog(`[ERROR] ${data.eroare}`, "#ef4444"); 
+                addLog(`[DENIED] ${data.eroare || "Node rejected request."}`, "#ef4444"); 
+                btn.disabled = false;
             }
         } catch (e) { 
-            addLog("[ERROR] Request failed. Check VPS connection.", "#ef4444"); 
+            addLog("[ERROR] Request failed. Connection to VPS lost.", "#ef4444"); 
+            btn.disabled = false;
         }
     }
 
-    // Funcția de ajutor pentru terminal
-    function addLog(message, color) {
-        const log = document.getElementById('terminalLog');
-        const line = document.createElement('div');
-        line.style.color = color;
-        line.style.marginBottom = "5px";
-        line.innerHTML = `<span style="color: #475569;">[${new Date().toLocaleTimeString()}]</span> ${message}`;
-        log.prepend(line);
-    }
+    // Notifications Loop - Curățat și optimizat
+    const activities = [
+        "New Vault Generated", 
+        "Mix: 0.15 ETH completed", 
+        "Relayer: Funds broadcasted", 
+        "Node 3: Dispersed successfully",
+        "Vortex: Stealth path secured"
+    ];
 
-    // Notifications Loop (Rămâne la fel)
-    const activities = ["New Vault Generated", "Mix: 0.15 ETH completed", "Relayer: Funds broadcasted"];
     function showNotification() {
         const area = document.getElementById('notification-area');
         if(!area) return;
+        
         const toast = document.createElement('div');
         const textNotify = activities[Math.floor(Math.random() * activities.length)];
-        toast.style.cssText = `background: #0f172a; color: #38bdf8; border: 1px solid #1e293b; border-left: 4px solid #10b981; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 10px; font-family: monospace;`;
-        toast.innerHTML = `<span style="color: #64748b;">[${new Date().toLocaleTimeString()}]</span> ${textNotify}`;
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        toast.style.cssText = `background: #0f172a; color: #38bdf8; border: 1px solid #1e293b; border-left: 4px solid #10b981; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 10px; font-family: monospace; transition: all 0.5s ease;`;
+        
+        toast.innerHTML = `<span style="color: #64748b;">[${time}]</span> ${textNotify}`;
         area.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
+        
+        // Autoremove cu fade
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
     }
-    setInterval(showNotification, 15000);
+    
+    setInterval(showNotification, 12000);
 </script>
 </body>
 </html>
