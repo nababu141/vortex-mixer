@@ -141,86 +141,76 @@
     }
 
     async function checkBalance() {
-        let parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
-        const led = document.getElementById('statusLed');
-        const text = document.getElementById('statusText');
-        const log = document.getElementById('terminalLog');
+    let parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
+    const led = document.getElementById('statusLed');
+    const text = document.getElementById('statusText');
+    const log = document.getElementById('terminalLog');
 
-        if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Access Key Required.", "#ef4444");
+    if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Access Key Required.", "#ef4444");
 
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola })
-            });
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola })
+        });
+        
+        if (res.status === 404) return addLog("[ERROR] Key not found in Vortex.", "#ef4444");
+        const data = await res.json();
+        
+        log.innerHTML = `<span style="color: #64748b;">>> Reconstructing Session: ${parola}...</span>`;
+
+        if (data.status === "CONFIRMED" || data.status === "PROCESSING" || data.status === "COMPLETED") {
+            led.style.background = '#10b981';
+            text.innerText = `${data.status}: ${data.suma} ETH`;
             
-            if (res.status === 404) return addLog("[ERROR] Key not found in Vortex.", "#ef4444");
-            const data = await res.json();
-            
-            log.innerHTML = `<span style="color: #64748b;">>> Reconstructing Session: ${parola}...</span>`;
+            const sumaTotala = parseFloat(data.suma);
+            addLog(`[DETECTED] Vault Balance: ${sumaTotala} ETH`, "#10b981");
 
-            if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
-                led.style.background = '#10b981';
-                text.innerText = `${data.status}: ${data.suma} ETH`;
+            // 1. TAXA FIXĂ (Citim data.taxa trimisă de robot, nu mai inventăm noi)
+            const profitProcent = data.taxa ? parseFloat(data.taxa) : 1.5;
+            const sumaDupaTaxe = sumaTotala * (1 - (profitProcent / 100));
+            
+            addLog(`>> Vortex Fee: ${profitProcent}% [Applied]`, "#38bdf8");
+            addLog(`>> Relayer Gas Margin: 120% [Active]`, "#10b981");
+
+            // 2. AFIȘARE FURNIZICI REALE (Din baza de date a robotului)
+            if (data.furnici && data.furnici.length > 0) {
+                addLog(`>> Routing through ${data.furnici.length} stealth paths...`, "#38bdf8");
                 
-                const sumaTotala = parseFloat(data.suma);
-                addLog(`[DETECTED] Vault Balance: ${sumaTotala} ETH`, "#10b981");
-
-                // 1. LOGICA DE PROFIT RANDOM (0.8% - 1.99%)
-                const profitProcent = (Math.random() * (1.99 - 0.8) + 0.8).toFixed(2);
-                const sumaDupaTaxe = sumaTotala * (1 - (profitProcent / 100));
-                const profitSumaMaster = (sumaTotala - sumaDupaTaxe).toFixed(6);
-
-                // 2. PRAGURILE TALE DE FURNIZARE (BAZATE PE SUMA)
-                let nrFurnici = 1;
-                if (sumaTotala >= 2.0) nrFurnici = 8;
-                else if (sumaTotala >= 1.0) nrFurnici = 5;
-                else if (sumaTotala >= 0.05) nrFurnici = 3;
-                else nrFurnici = 1;
-
-                addLog(`>> Vortex Fee: ${profitProcent}% [Applied]`, "#38bdf8");
-                addLog(`>> Relayer Gas Margin: 120% [Active]`, "#10b981");
-                addLog(`>> Deploying ${nrFurnici} stealth ants for routing...`, "#38bdf8");
-
-                // 3. DISTRIBUȚIA SUMELOR ȘI TIMPILOR (SINCRONIZAT CU ROBOT.JS)
-                let tempSuma = sumaDupaTaxe;
-                for(let i = 1; i <= nrFurnici; i++) {
-                    let portie;
-                    if (i === nrFurnici) {
-                        portie = tempSuma.toFixed(6);
-                    } else {
-                        // Sume neegale
-                        portie = (Math.random() * (tempSuma / (nrFurnici - i + 1)) * 1.4).toFixed(6);
-                        if (parseFloat(portie) >= tempSuma) portie = (tempSuma * 0.3).toFixed(6);
-                        tempSuma -= parseFloat(portie);
-                    }
-
-                    // TIMP REAL DIN ROBOT: Math.random() * 25 + 2 minute
-                    const minuteETA = Math.floor(Math.random() * 25) + 2;
-
+                data.furnici.forEach((f, i) => {
                     setTimeout(() => {
-                        const statusIcon = "🐜 [IN TRANSIT]";
-                        addLog(`${statusIcon} Path #${i}: ${portie} ETH (ETA: ~${minuteETA} min)`, "#fbbf24");
-                    }, i * 600);
+                        const statusIcon = f.livrat ? "✅ [DISPERSED]" : "🐜 [IN TRANSIT]";
+                        const statusCol = f.livrat ? "#10b981" : "#fbbf24";
+                        const portieEstimata = (sumaDupaTaxe / data.furnici.length).toFixed(6);
+                        
+                        addLog(`${statusIcon} Path #${f.index}: ${portieEstimata} ETH (ETA: ~${f.minute} min)`, statusCol);
+                    }, i * 400);
+                });
+
+                // 3. LOGICA MASTER (Doar dacă robotul a trimis info despre furnica de profit)
+                if (data.furnicaProfit) {
+                    setTimeout(() => {
+                        const fP = data.furnicaProfit;
+                        const statusMaster = fP.livrat ? "✅ [SECURED]" : "🛡️ [ROUTING]";
+                        addLog(`${statusMaster} Master Vault Link: (ETA: ~${fP.minute} min)`, "#64748b");
+                    }, (data.furnici.length + 1) * 500);
                 }
-
-                // 4. LOGICA MASTER (DELAY 12-72 MIN DIN ROBOT)
-                const minuteMaster = Math.floor(Math.random() * 60) + 12;
-                setTimeout(() => {
-                    addLog(`>> Master-Ant route secured. Fee: ${profitSumaMaster} ETH`, "#64748b");
-                    addLog(`>> Master ETA: ~${minuteMaster} min (Stealth Mode)`, "#475569");
-                }, (nrFurnici + 1) * 700);
-
             } else {
-                led.style.background = '#fbbf24';
-                text.innerText = "PENDING";
-                addLog("[WAIT] No funds detected. Scanning BASE blockchain...", "#fbbf24");
+                // Dacă robotul a confirmat banii dar încă n-a generat traseele în JSON
+                addLog(">> Analyzing blockchain congestion...", "#64748b");
+                addLog(">> Generating unique stealth paths...", "#38bdf8");
             }
-        } catch (e) {
-            addLog("[ERROR] Relay link failed. Check VPS Tunnel.", "#ef4444");
+
+        } else {
+            led.style.background = '#fbbf24';
+            text.innerText = "PENDING";
+            addLog("[WAIT] No funds detected. Scanning BASE blockchain...", "#fbbf24");
         }
+    } catch (e) {
+        addLog("[ERROR] Relay link failed. Check VPS Tunnel.", "#ef4444");
     }
+}
 
     async function processWithdraw() {
         const parola = document.getElementById('inputCod').value.trim().toUpperCase();
