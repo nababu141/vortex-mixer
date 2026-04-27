@@ -175,27 +175,40 @@
             }
 
             const data = await res.json();
-            log.innerHTML = `<span style="color: #64748b;">>> Session: ${parola.toUpperCase()}</span>`;
 
-            if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
-                led.style.background = '#10b981';
-                text.innerText = `${data.status}: ${data.suma} ETH`;
-                addLog(`[SESS] Balance: ${data.suma} ETH`, "#10b981");
+// Verificăm dacă biletul există și are un status valid
+if (data && data.status) {
+    log.innerHTML = `<span style="color: #64748b;">>> Reconstructing Session: ${parola}...</span>`;
+    
+    // Acceptăm orice status care înseamnă că biletul e în lucru sau gata
+    const statusuriValide = ["CONFIRMED", "PROCESSING", "COMPLETED", "SENDING"];
+    
+    if (statusuriValide.includes(data.status.toUpperCase())) {
+        led.style.background = '#10b981'; // Verde pentru activ
+        text.innerText = `${data.status}: ${data.suma} ETH`;
+        
+        addLog(`[SESS] Status: ${data.status}`, "#10b981");
+        addLog(`[SESS] Balance: ${data.suma} ETH`, "#38bdf8");
 
-                if (data.furnici && data.furnici.length > 0) {
-                    data.furnici.forEach((f) => {
-                        const icon = f.livrat ? "✅ [OK]" : "🐜 [WAIT]";
-                        addLog(`${icon} Node ${f.index}`, f.livrat ? "#10b981" : "#fbbf24");
-                    });
-                }
-            } else {
-                led.style.background = '#fbbf24';
-                text.innerText = "PENDING";
-                addLog("[WAIT] No funds detected.", "#fbbf24");
-            }
-        } catch (e) { addLog("[ERROR] Connection failed.", "#ef4444"); }
+        // Afișăm furnicile doar dacă robotul le-a generat
+        if (data.furnici && data.furnici.length > 0) {
+            data.furnici.forEach((f) => {
+                const icon = f.livrat ? "✅" : "🐜";
+                addLog(`${icon} Node ${f.index}: ${f.livrat ? 'DISPERSED' : 'WAITING'} (ETA: ${f.minute}m)`, f.livrat ? "#10b981" : "#fbbf24");
+            });
+        } else {
+            // Mesajul pe care îl vezi tu acum în log-uri
+            addLog("🐜 [WAIT] Node 1 - Establishing stealth path...", "#fbbf24");
+        }
+    } else {
+        // Dacă statusul e PENDING sau altceva
+        led.style.background = '#fbbf24';
+        text.innerText = "WAITING";
+        addLog("[WAIT] Scanning BASE blockchain for deposit...", "#fbbf24");
     }
-
+} else {
+    addLog("[ERROR] Invalid Key or Session Expired.", "#ef4444");
+}
     async function processWithdraw() {
         const parola = document.getElementById('inputCod').value.trim().toUpperCase();
         const dest = document.getElementById('inputDest').value.trim();
