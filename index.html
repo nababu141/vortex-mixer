@@ -25,10 +25,9 @@
         .code-text { color: #fbbf24; font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; }
         .copy-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .copy-btn { background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px; font-size: 11px; border-radius: 4px; margin-top: 15px; }
         .status-bar { display: flex; align-items: center; gap: 10px; margin-top: 20px; background: #020617; padding: 12px; border-radius: 4px; border: 1px dashed #334155; }
         #statusLed { width: 12px; height: 12px; background: #475569; border-radius: 50%; transition: 0.3s; }
-        .log { background: #000; color: #10b981; padding: 15px; height: 150px; overflow-y: auto; font-size: 11px; border: 1px solid #1e293b; margin-top: 20px; font-family: 'Courier New', monospace; border-radius: 4px; border-left: 3px solid #38bdf8; line-height: 1.6; }
+        .log { background: #000; color: #10b981; padding: 15px; height: 180px; overflow-y: auto; font-size: 11px; border: 1px solid #1e293b; margin-top: 20px; font-family: 'Courier New', monospace; border-radius: 4px; border-left: 3px solid #38bdf8; line-height: 1.6; }
         input { width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px; outline: none; font-family: monospace; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 900px) { .main-layout { flex-direction: column; align-items: center; } .side-panel { width: 100%; max-width: 500px; } }
@@ -39,8 +38,8 @@
 <div class="main-layout">
     <div class="side-panel">
         <h4>How it Works</h4>
-        <p><b style="color: #f1f5f9;">1. Generate:</b> Create a unique, non-custodial vault address on BASE.</p>
-        <p><b style="color: #f1f5f9;">2. Deposit:</b> Send ETH to your vault. Funds are mixed in the pool.</p>
+        <p><b style="color: #f1f5f9;">1. Generate:</b> Create a unique vault address on BASE.</p>
+        <p><b style="color: #f1f5f9;">2. Deposit:</b> Send ETH to your vault. Funds are mixed pool.</p>
         <p><b style="color: #f1f5f9;">3. Anonymize:</b> Transaction history is detached.</p>
         <p><b style="color: #f1f5f9;">4. Withdraw:</b> Use Private Key to send to a clean address.</p>
         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
@@ -48,163 +47,62 @@
             <p><b style="color: #10b981;">● Min. Deposit:</b> 0.003 ETH</p>
             <p><b style="color: #10b981;">● Fee:</b> 0.8% - 1.99%</p>
         </div>
+        <h4 style="color: #fbbf24; margin-top: 20px;">System Specs</h4>
+        <p>Network: <span style="color: #38bdf8; float: right;">BASE (L2)</span></p>
+        <p>Status: <span style="color: #10b981; float: right;">ENCRYPTED</span></p>
     </div>
 
     <div class="container">
         <h1>NABABU</h1>
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
-            <button class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
+            <button id="btn-dep" class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
+            <button id="btn-with" class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
         </div>
 
         <div id="deposit" class="card active">
             <h3>01 Access Generation</h3>
             <button class="main-btn" onclick="generateAccess()">Generate Vault Key</button>
             <div id="result-area" style="display: none; margin-top: 25px;">
-                
-                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid #fbbf24; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; border-left: 4px solid #fbbf24;">
-                    <p style="color: #fbbf24; font-weight: bold; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
-                        ⚠️ WARNING: USE BASE NETWORK ONLY
-                    </p>
-                    <p style="color: #cbd5e1; margin: 5px 0 0 0; font-size: 11px; line-height: 1.4;">
-                        Do not send via Ethereum Mainnet, BSC or Arbitrum.<br>
-                        Funds sent on other networks will be <b>PERMANENTLY LOST</b>.
-                    </p>
+                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid #fbbf24; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                    <p style="color: #fbbf24; font-weight: bold; margin: 0; font-size: 11px;">⚠️ WARNING: USE BASE NETWORK ONLY</p>
                 </div>
                 <div class="data-display">
-                    <span class="label-text">Deposit Address (BASE Network)</span>
+                    <span class="label-text">Deposit Address (BASE)</span>
                     <div class="copy-row">
                         <span id="adrText" class="address-text">0x...</span>
                         <button class="copy-btn" onclick="copy('adrText')">📋 COPY</button>
                     </div>
                 </div>
-
                 <div class="data-display">
-                    <span class="label-text">Private Access Key (Save this!)</span>
+                    <span class="label-text">Private Access Key</span>
                     <div class="copy-row">
                         <span id="codText" class="code-text">NABABU-XXXX</span>
                         <button class="copy-btn" onclick="copy('codText')">📋 COPY</button>
                     </div>
                 </div>
-
                 <div class="status-bar">
                     <div id="statusLed"></div>
-                    <span id="statusText" style="font-size: 11px; flex-grow: 1; color: #94a3b8;">AWAITING TRANSACTION...</span>
-                    <button onclick="checkBalance()" style="background: transparent; border: 1px solid #4ade80; color: #4ade80; font-size: 10px; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-weight: bold;">SCAN BALANCE</button>
+                    <span id="statusText" style="font-size: 11px; flex-grow: 1;">AWAITING TRANSACTION...</span>
+                    <button onclick="checkBalance()" style="background: transparent; border: 1px solid #4ade80; color: #4ade80; font-size: 10px; padding: 5px 10px; cursor: pointer; border-radius: 3px;">SCAN BALANCE</button>
                 </div>
             </div>
         </div>
 
         <div id="withdraw" class="card">
-    <h3>02 Finalize Protocol</h3>
-    <input type="text" id="inputCod" placeholder="Enter NABABU-XXXX Key" autocomplete="off">
-    <input type="text" id="inputDest" placeholder="Destination Address (ETH/BASE)" autocomplete="off">
-    <button class="main-btn" onclick="processWithdraw()">Withdraw Funds</button>
-</div>
+            <h3>02 Finalize Protocol</h3>
+            <input type="text" id="inputCod" placeholder="Enter NABABU-XXXX Key" autocomplete="off">
+            <input type="text" id="inputDest" placeholder="Destination Address (ETH/BASE)" autocomplete="off">
+            <button class="main-btn" onclick="processWithdraw()">Withdraw Funds</button>
+        </div>
 
         <div class="log" id="terminalLog">
             <span style="color: #64748b;">>> Terminal initialized...</span><br>
             <span style="color: #64748b;">>> System ready. Waiting for instructions...</span>
         </div>
     </div>
-
-    <div class="side-panel">
-        <h4 style="color: #fbbf24;">System Specs</h4>
-        <div style="margin-bottom: 10px;">
-            <span style="color: #64748b;">Network:</span> <span style="float: right; color: #38bdf8;">BASE (L2)</span>
-        </div>
-        <div style="margin-bottom: 10px;">
-            <span style="color: #64748b;">Status:</span> <span style="float: right; color: #10b981;">ENCRYPTED</span>
-        </div>
-    </div>
 </div>
 
-<script>
-    </head>
-<body>
-
-<div class="main-layout">
-    <div class="side-panel">
-        <h4>How it Works</h4>
-        <p><b style="color: #f1f5f9;">1. Generate:</b> Create a unique, non-custodial vault address on BASE.</p>
-        <p><b style="color: #f1f5f9;">2. Deposit:</b> Send ETH to your vault. Funds are mixed in the pool.</p>
-        <p><b style="color: #f1f5f9;">3. Anonymize:</b> Transaction history is detached.</p>
-        <p><b style="color: #f1f5f9;">4. Withdraw:</b> Use Private Key to send to a clean address.</p>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
-        <div style="font-size: 0.85rem; line-height: 1.4;">
-            <p><b style="color: #10b981;">● Min. Deposit:</b> 0.003 ETH</p>
-            <p><b style="color: #10b981;">● Fee:</b> 0.8% - 1.99%</p>
-        </div>
-    </div>
-
-    <div class="container">
-        <h1>NABABU</h1>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
-            <button class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
-        </div>
-
-        <div id="deposit" class="card active">
-            <h3>01 Access Generation</h3>
-            <button class="main-btn" onclick="generateAccess()">Generate Vault Key</button>
-            <div id="result-area" style="display: none; margin-top: 25px;">
-                
-                <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid #fbbf24; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; border-left: 4px solid #fbbf24;">
-                    <p style="color: #fbbf24; font-weight: bold; margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
-                        ⚠️ WARNING: USE BASE NETWORK ONLY
-                    </p>
-                    <p style="color: #cbd5e1; margin: 5px 0 0 0; font-size: 11px; line-height: 1.4;">
-                        Do not send via Ethereum Mainnet, BSC or Arbitrum.<br>
-                        Funds sent on other networks will be <b>PERMANENTLY LOST</b>.
-                    </p>
-                </div>
-                <div class="data-display">
-                    <span class="label-text">Deposit Address (BASE Network)</span>
-                    <div class="copy-row">
-                        <span id="adrText" class="address-text">0x...</span>
-                        <button class="copy-btn" onclick="copy('adrText')">📋 COPY</button>
-                    </div>
-                </div>
-
-                <div class="data-display">
-                    <span class="label-text">Private Access Key (Save this!)</span>
-                    <div class="copy-row">
-                        <span id="codText" class="code-text">NABABU-XXXX</span>
-                        <button class="copy-btn" onclick="copy('codText')">📋 COPY</button>
-                    </div>
-                </div>
-
-                <div class="status-bar">
-                    <div id="statusLed"></div>
-                    <span id="statusText" style="font-size: 11px; flex-grow: 1; color: #94a3b8;">AWAITING TRANSACTION...</span>
-                    <button onclick="checkBalance()" style="background: transparent; border: 1px solid #4ade80; color: #4ade80; font-size: 10px; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-weight: bold;">SCAN BALANCE</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="withdraw" class="card">
-    <h3>02 Finalize Protocol</h3>
-    <input type="text" id="inputCod" placeholder="Enter NABABU-XXXX Key" autocomplete="off">
-    <input type="text" id="inputDest" placeholder="Destination Address (ETH/BASE)" autocomplete="off">
-    <button class="main-btn" onclick="processWithdraw()">Withdraw Funds</button>
-</div>
-
-        <div class="log" id="terminalLog">
-            <span style="color: #64748b;">>> Terminal initialized...</span><br>
-            <span style="color: #64748b;">>> System ready. Waiting for instructions...</span>
-        </div>
-    </div>
-
-    <div class="side-panel">
-        <h4 style="color: #fbbf24;">System Specs</h4>
-        <div style="margin-bottom: 10px;">
-            <span style="color: #64748b;">Network:</span> <span style="float: right; color: #38bdf8;">BASE (L2)</span>
-        </div>
-        <div style="margin-bottom: 10px;">
-            <span style="color: #64748b;">Status:</span> <span style="float: right; color: #10b981;">ENCRYPTED</span>
-        </div>
-    </div>
-</div>
+<div id="notification-area" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
 
 <script>
     const API_URL = "https://api.nababu.io";
@@ -213,25 +111,27 @@
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        if (id === 'deposit') document.getElementById('btn-dep').classList.add('active');
+        else document.getElementById('btn-with').classList.add('active');
     }
 
     function addLog(msg, color = "#10b981") {
         const log = document.getElementById('terminalLog');
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        log.innerHTML += <br><span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>;
+        log.innerHTML += `<br><span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
         log.scrollTop = log.scrollHeight;
     }
 
     function copy(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text);
-        addLog(Copied: ${text.substring(0, 15)}..., "#38bdf8");
+        addLog(`Copied: ${text.substring(0, 15)}...`, "#38bdf8");
     }
 
     async function generateAccess() {
-        addLog(">> Connecting to Relay...", "#38bdf8");
+        addLog("Connecting to Relay...", "#38bdf8");
         try {
-            const res = await fetch(${API_URL}/api/generate-ticket);
+            const res = await fetch(`${API_URL}/api/generate-ticket`);
             const data = await res.json();
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('adrText').innerText = data.adresa;
@@ -241,151 +141,67 @@
     }
 
     async function checkBalance() {
-    let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
-    const led = document.getElementById('statusLed');
-    const text = document.getElementById('statusText');
-    const log = document.getElementById('terminalLog');
-    
-    if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Enter a valid Ticket Code.", "#ef4444");
+        let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
+        const led = document.getElementById('statusLed');
+        const text = document.getElementById('statusText');
+        if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Invalid Code.", "#ef4444");
 
-    try {
-        const res = await fetch(${API_URL}/api/status, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola: parola.toUpperCase() })
-        });
-        
-        if (res.status === 404) {
-            led.style.background = '#ef4444';
-            text.innerText = "NOT FOUND";
-            return addLog("[ERROR] Ticket not found in database.", "#ef4444");
-        }
+        try {
+            const res = await fetch(`${API_URL}/api/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola: parola.toUpperCase() })
+            });
+            const data = await res.json();
+            if (res.status === 404) return addLog("[ERROR] Ticket not found.", "#ef4444");
 
-        const data = await res.json();
-        
-        // Curățăm terminalul pentru a afișa starea curentă proaspătă
-        log.innerHTML = <span style="color: #64748b;">>> Reconstructing session for ${parola.toUpperCase()}...</span>;
-
-        if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
-            led.style.background = '#10b981';
-            text.innerText = ${data.status}: ${data.suma} ETH;
-            
-            addLog([SESS] Vault identified. Balance: ${data.suma} ETH, "#10b981");
-
-            if (data.status === "PROCESSING") {
-                addLog(>> Vortex Active [System Fee: ${data.taxa}%], "#38bdf8");
-                if (data.furnici && data.furnici.length > 0) {
-                    data.furnici.forEach((f) => {
-                        const icon = f.livrat ? "✅ [DELIVERED]" : "🐜 [IN TRANSIT]";
-                        const color = f.livrat ? "#10b981" : "#fbbf24";
-                        const eta = f.livrat ? "" : ` (ETA: ${f.minute}m)`;
-                        addLog(${icon} Ant ${f.index}${eta}, color);
+            if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
+                led.style.background = '#10b981';
+                text.innerText = `${data.status}: ${data.suma} ETH`;
+                addLog(`[SESS] Balance: ${data.suma} ETH`, "#10b981");
+                if (data.furnici) {
+                    data.furnici.forEach(f => {
+                        const icon = f.livrat ? "✅" : "🐜";
+                        addLog(`${icon} Ant ${f.index} - ${f.livrat ? 'Delivered' : 'In Transit'}`, f.livrat ? "#10b981" : "#fbbf24");
                     });
                 }
             } else {
-                addLog(">> Status: Awaiting Withdrawal Command.", "#38bdf8");
+                led.style.background = '#fbbf24';
+                text.innerText = "PENDING";
+                addLog("[WAIT] No funds detected.", "#fbbf24");
             }
-        } else {
-            led.style.background = '#fbbf24';
-            text.innerText = "PENDING";
-            addLog("[WAIT] No funds detected on this vault yet.", "#fbbf24");
-        }
-    } catch (e) { addLog("[ERROR] Connection to Relay failed.", "#ef4444"); }
-}
-    
+        } catch (e) { addLog("[ERROR] Relay error.", "#ef4444"); }
+    }
+
     async function processWithdraw() {
         const parola = document.getElementById('inputCod').value.trim().toUpperCase();
         const dest = document.getElementById('inputDest').value.trim();
         if(!parola || !dest) return addLog("[ERROR] Fields required!", "#ef4444");
-
-        addLog(>> Initiating Vortex Dispersion..., "#fbbf24");
-        
+        addLog(`>> Initiating Vortex Dispersion for ${parola}...`, "#fbbf24");
         try {
-            const res = await fetch(${API_URL}/api/withdraw, {
+            const res = await fetch(`${API_URL}/api/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parola, adresaDestinatie: dest })
             });
-            
             const data = await res.json();
-
             if (data.succes) {
-                addLog("🚀 [VORTEX] Stealth routing engaged!", "#00ffcc");
-                addLog(">> Routing through multiple path-nodes...", "#64748b");
-                
-                // Pornim o monitorizare automată la fiecare 15 secunde să vedem furnicile live
-                let scanCount = 0;
-                const liveMonitor = setInterval(async () => {
-                    await checkBalance();
-                    scanCount++;
-                    if(scanCount > 20) clearInterval(liveMonitor); // Ne oprim după 5 minute de auto-refresh
-                }, 15000);
-
-            } else { 
-                addLog([ERROR] ${data.eroare}, "#ef4444"); 
-            }
-        } catch (e) { 
-            addLog("[ERROR] Connection error. Check balance in a few minutes.", "#ef4444"); 
-        }
+                addLog("🚀 Stealth routing engaged!", "#00ffcc");
+                setInterval(checkBalance, 15000);
+            } else { addLog(`[ERROR] ${data.eroare}`, "#ef4444"); }
+        } catch (e) { addLog("[ERROR] Connection error.", "#ef4444"); }
     }
-</script>
-
-<div id="notification-area" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
-
-<script>
-    const activities = [
-        "New Vault Generated (BASE)",
-        "Privacy Mix: 0.15 ETH completed",
-        "New Vault Generated (BASE)",
-        "Privacy Mix: 1.05 ETH completed",
-        "Privacy Mix: 0.08 ETH completed",
-        "Incoming deposit detected...",
-        "Relayer: Funds broadcasted"
-    ];
 
     function showNotification() {
         const area = document.getElementById('notification-area');
-        if (!area) return;
+        const activities = ["New Vault Generated", "Mix: 0.52 ETH completed", "Relayer: Funds broadcasted"];
         const toast = document.createElement('div');
-        const text = activities[Math.floor(Math.random() * activities.length)];
-        
-        toast.style.cssText = `
-            background: #0f172a;
-            color: #38bdf8;
-            border: 1px solid #1e293b;
-            border-left: 4px solid #10b981;
-            padding: 12px 20px;
-            margin-top: 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-family: monospace;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
-            animation: fadeInRight 0.5s ease-out;
-            opacity: 0.9;
-        `;
-        
-        toast.innerHTML = <span style="color: #64748b;">[${new Date().toLocaleTimeString()}]</span> ${text};
+        toast.style.cssText = `background: #0f172a; color: #38bdf8; border-left: 4px solid #10b981; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 11px; border: 1px solid #1e293b; box-shadow: 0 10px 15px rgba(0,0,0,0.5);`;
+        toast.innerHTML = `<span style="color: #64748b;">[${new Date().toLocaleTimeString()}]</span> ${activities[Math.floor(Math.random()*activities.length)]}`;
         area.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.animation = "fadeOut 0.5s ease-in";
-            setTimeout(() => toast.remove(), 500);
-        }, 4000);
+        setTimeout(() => toast.remove(), 5000);
     }
-
-    const styleNotify = document.createElement('style');
-    styleNotify.innerHTML = `
-        @keyframes fadeInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-    `;
-    document.head.appendChild(styleNotify);
-
-    function loopNotifications() {
-        showNotification();
-        setTimeout(loopNotifications, Math.random() * (30000 - 15000) + 15000);
-    }
-    
-    setTimeout(loopNotifications, 3000);
+    setInterval(showNotification, 20000);
 </script>
 </body>
 </html>
