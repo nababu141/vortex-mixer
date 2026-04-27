@@ -171,57 +171,62 @@
             }
         } catch (e) { addLog("[ERROR] API offline.", "#ef4444"); }
     }
+    
 async function checkBalance() {
     const inputVal = document.getElementById('inputCod').value.trim();
     const textVal = document.getElementById('codText').innerText;
     let parola = (inputVal || textVal).toUpperCase();
 
-    const led = document.getElementById('statusLed');
-    const text = document.getElementById('statusText');
-    const log = document.getElementById('terminalLog');
-
-    if(!parola || parola.includes("XXXX")) return; 
+    if(!parola || parola.includes("XXXX")) return;
 
     try {
+        console.log("Trimit cerere pentru:", parola); // Vezi în F12
         const res = await fetch(`${API_URL}/api/status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola: parola }) 
+            body: JSON.stringify({ parola: parola })
         });
 
-        if (res.status === 404) return;
-
         const data = await res.json();
-        const statusReal = data.status || "PENDING";
-        const sumaReala = data.suma || data.sumaUltima || "0";
-        
-        if (statusReal.toUpperCase() !== "PENDING") {
+        console.log("Robotul a răspuns cu:", data); // Aici vedem „marfa”
+
+        const led = document.getElementById('statusLed');
+        const text = document.getElementById('statusText');
+
+        // Dacă robotul a găsit codul, dăm semnalul verde
+        if (data && (data.status || data.suma || data.sumaUltima)) {
             led.style.background = '#10b981';
-            text.innerText = `${statusReal}: ${sumaReala} ETH`;
+            
+            // Luăm suma indiferent cum o numește robotul (suma sau sumaUltima)
+            const afiseazaSuma = data.suma || data.sumaUltima || "0.00";
+            const afiseazaStatus = data.status || "ACTIVE";
+            
+            text.innerText = `${afiseazaStatus}: ${afiseazaSuma} ETH`;
 
-            if (!log.innerText.includes("Detected: " + sumaReala)) {
-                addLog(`[VORTEX] Session identified: ${parola}`, "#38bdf8");
-                addLog(`[SESS] Balance Detected: ${sumaReala} ETH`, "#10b981");
+            // Scriem în terminalul site-ului ca să fim siguri
+            if (!document.getElementById('terminalLog').innerText.includes("CONNECTED")) {
+                addLog(`>> SYSTEM CONNECTED: ${parola}`, "#10b981");
+                addLog(`>> ASSETS: ${afiseazaSuma} ETH`, "#38bdf8");
             }
-
+            
+            // Verificăm furnicile
             if (data.furnici && data.furnici.length > 0) {
-                data.furnici.forEach((f) => {
-                    const uniqueId = `Node ${f.index || f.id}:`;
-                    if (!log.innerText.includes(uniqueId)) {
-                        const icon = f.livrat ? "✅" : "🐜";
-                        const col = f.livrat ? "#10b981" : "#fbbf24";
-                        addLog(`${icon} ${uniqueId} ${f.livrat ? 'DISPERSED' : 'IN TRANSIT'} (ETA: ${f.minute || '?'}m)`, col);
+                data.furnici.forEach(f => {
+                    if (!document.getElementById('terminalLog').innerText.includes("Node " + f.index)) {
+                        addLog(`🐜 Node ${f.index}: ${f.livrat ? 'DONE' : 'WAITING'}`, f.livrat ? "#10b981" : "#fbbf24");
                     }
                 });
             }
         } else {
-            led.style.background = '#fbbf24';
-            text.innerText = "WAITING";
+            addLog(">> Scanning... No funds detected yet.", "#64748b");
         }
+
     } catch (e) {
-        console.log("Eroare comunicare robot:", e);
+        console.error("Eroare la fetch:", e);
+        addLog(">> CONNECTION ERROR - CHECK API URL", "#ef4444");
     }
-} 
+}
+    
 async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
