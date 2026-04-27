@@ -228,36 +228,38 @@ async function checkBalance() {
 }
     
 async function processWithdraw() {
-        const inputVal = document.getElementById('inputCod').value.trim();
-        const textVal = document.getElementById('codText').innerText;
-        const parola = (inputVal || textVal).toUpperCase();
-        const dest = document.getElementById('inputDest').value.trim();
+    const parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
+    const dest = document.getElementById('inputDest').value.trim();
 
-        if(!parola || !dest || dest.length < 40) {
-            addLog("[ERROR] Provide Key and BASE Address!", "#ef4444");
-            return;
-        }
+    if(!dest || dest.length < 40) return addLog("[ERROR] Invalid Destination.", "#ef4444");
 
-        addLog(">> Initiating Dispersion Protocol...", "#fbbf24");
+    addLog(`>> Routing sequence started for ${parola}...`, "#38bdf8");
 
-        try {
-            const res = await fetch(`${API_URL}/api/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola, adresaDestinatie: dest })
-            });
-            const data = await res.json();
-            
-            if (data.succes) {
-                addLog("🚀 [VORTEX] Routing engaged!", "#00ffcc");
-                setInterval(checkBalance, 15000);
+    try {
+        const res = await fetch(`${API_URL}/api/withdraw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola, adresaDestinatie: dest })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            addLog("🚀 [VORTEX] Ants dispersed! Check terminal for updates.", "#00ffcc");
+            // Pornim monitorizarea intensivă
+            setInterval(checkBalance, 15000);
+        } else {
+            // Dacă primim "Invalid or Active", îi dăm userului opțiunea să știe că se lucrează
+            if(data.eroare === "Invalid or active") {
+                addLog("⚠️ [ACTIVE] Transaction already in progress. Please wait for nodes.", "#fbbf24");
             } else {
-                addLog(`[DENIED] ${data.eroare || "Check Gas/Balance"}`, "#ef4444");
+                addLog(`[ERROR] ${data.eroare}`, "#ef4444");
             }
-        } catch (e) {
-            addLog("[ERROR] Connection to Relayer lost.", "#ef4444");
         }
+    } catch (e) {
+        addLog("[ERROR] Failed to connect to Relayer.", "#ef4444");
     }
+}
 </script>
 </body>
 </html>
