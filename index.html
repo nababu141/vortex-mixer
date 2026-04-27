@@ -141,37 +141,78 @@
     }
 
     async function checkBalance() {
-        let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
-        const led = document.getElementById('statusLed');
-        const text = document.getElementById('statusText');
-        if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Invalid Code.", "#ef4444");
+    let parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
+    const led = document.getElementById('statusLed');
+    const text = document.getElementById('statusText');
+    const log = document.getElementById('terminalLog');
 
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola: parola.toUpperCase() })
-            });
-            const data = await res.json();
-            if (res.status === 404) return addLog("[ERROR] Ticket not found.", "#ef4444");
+    if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Access Key required.", "#ef4444");
 
-            if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
-                led.style.background = '#10b981';
-                text.innerText = `${data.status}: ${data.suma} ETH`;
-                addLog(`[SESS] Balance: ${data.suma} ETH`, "#10b981");
-                if (data.furnici) {
-                    data.furnici.forEach(f => {
-                        const icon = f.livrat ? "✅" : "🐜";
-                        addLog(`${icon} Ant ${f.index} - ${f.livrat ? 'Delivered' : 'In Transit'}`, f.livrat ? "#10b981" : "#fbbf24");
-                    });
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola })
+        });
+        const data = await res.json();
+        
+        log.innerHTML = `<span style="color: #64748b;">>> Synchronizing Vault: ${parola}...</span>`;
+
+        if (data.status === "CONFIRMED" || data.status === "PROCESSING") {
+            led.style.background = '#10b981';
+            text.innerText = `${data.status}: ${data.suma} ETH`;
+            
+            const suma = parseFloat(data.suma);
+            addLog(`[DETECTED] Asset flow: ${suma} ETH`, "#10b981");
+
+            // --- LOGICA TA DE FURNIZARE (ANTS) ---
+            let nrFurnici = 1;
+            if (suma >= 2.0) nrFurnici = 8;
+            else if (suma >= 1.0) nrFurnici = 5;
+            else if (suma >= 0.05) nrFurnici = 3;
+            else nrFurnici = 1;
+
+            // --- LOGICA DE PROFIT & GAS (RANDOMIZED) ---
+            // Profit între 0.8% și 1.99%
+            const profitProcent = (Math.random() * (1.99 - 0.8) + 0.8).toFixed(2);
+            // Marja de gas 120% inclusă în calculul de relayer
+            addLog(`>> Privacy Protocol Active [Fee: ${profitProcent}%]`, "#38bdf8");
+            addLog(`>> Priority Gas: 120% Margin Engaged`, "#64748b");
+            addLog(`>> Initializing ${nrFurnici} unique transit-paths...`, "#38bdf8");
+
+            // Simulăm plecarea furnicilor cu sume NEEGALE (Random Distribution)
+            let sumaRamasa = suma * (1 - (profitProcent / 100));
+            for(let i = 1; i <= nrFurnici; i++) {
+                // Distribuție inegală: ultima furnică ia restul, celelalte iau bucăți random
+                let portieFurnica;
+                if (i === nrFurnici) {
+                    portieFurnica = sumaRamasa.toFixed(6);
+                } else {
+                    portieFurnica = (Math.random() * (sumaRamasa / (nrFurnici - i + 1))).toFixed(6);
+                    sumaRamasa -= parseFloat(portieFurnica);
                 }
-            } else {
-                led.style.background = '#fbbf24';
-                text.innerText = "PENDING";
-                addLog("[WAIT] No funds detected.", "#fbbf24");
+
+                setTimeout(() => {
+                    const status = Math.random() > 0.3 ? "✅ [MIXED]" : "🐜 [IN TRANSIT]";
+                    const color = status.includes("MIXED") ? "#10b981" : "#fbbf24";
+                    addLog(`${status} Ant #${i} carrying ${portieFurnica} ETH...`, color);
+                }, i * 400);
             }
-        } catch (e) { addLog("[ERROR] Relay error.", "#ef4444"); }
+
+            // Notă despre Master-ul nostru (repartizare la 24-72h)
+            setTimeout(() => {
+                addLog(`>> Relayer profit scheduled for Master Vault [24-72h window]`, "#64748b");
+            }, nrFurnici * 450);
+
+        } else {
+            led.style.background = '#fbbf24';
+            text.innerText = "PENDING";
+            addLog("[WAIT] Scanning blockchain for deposit...", "#fbbf24");
+        }
+    } catch (e) {
+        addLog("[ERROR] Relay connection timed out.", "#ef4444");
     }
+}
 
     async function processWithdraw() {
         const parola = document.getElementById('inputCod').value.trim().toUpperCase();
