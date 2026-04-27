@@ -154,65 +154,68 @@
     }
 
     async function checkBalance() {
-        let parola = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
+        let parolaElement = document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText;
+        let parola = parolaElement.toUpperCase();
         const led = document.getElementById('statusLed');
         const text = document.getElementById('statusText');
         const log = document.getElementById('terminalLog');
 
-        if(!parola || parola.includes("XXXX")) return addLog("[ERROR] Invalid Ticket.", "#ef4444");
+        if(!parola || parola.includes("XXXX")) return; 
 
         try {
             const res = await fetch(`${API_URL}/api/status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola: parola.toUpperCase() })
+                body: JSON.stringify({ parola })
             });
 
             if (res.status === 404) {
                 led.style.background = '#ef4444';
                 text.innerText = "NOT FOUND";
-                return addLog("[ERROR] Ticket not found.", "#ef4444");
+                return;
             }
 
             const data = await res.json();
 
-// Verificăm dacă biletul există și are un status valid
-if (data && data.status) {
-    log.innerHTML = `<span style="color: #64748b;">>> Reconstructing Session: ${parola}...</span>`;
-    
-    // Acceptăm orice status care înseamnă că biletul e în lucru sau gata
-    const statusuriValide = ["CONFIRMED", "PROCESSING", "COMPLETED", "SENDING"];
-    
-    if (statusuriValide.includes(data.status.toUpperCase())) {
-        led.style.background = '#10b981'; // Verde pentru activ
-        text.innerText = `${data.status}: ${data.suma} ETH`;
-        
-        addLog(`[SESS] Status: ${data.status}`, "#10b981");
-        addLog(`[SESS] Balance: ${data.suma} ETH`, "#38bdf8");
+            if (data && data.status) {
+                log.innerHTML = `<span style="color: #64748b;">>> Reconstructing Session: ${parola}...</span>`;
+                
+                const statusuriValide = ["CONFIRMED", "PROCESSING", "COMPLETED", "SENDING"];
+                
+                if (statusuriValide.includes(data.status.toUpperCase())) {
+                    led.style.background = '#10b981';
+                    text.innerText = `${data.status}: ${data.suma} ETH`;
+                    
+                    addLog(`[SESS] Status: ${data.status}`, "#10b981");
+                    addLog(`[SESS] Balance: ${data.suma} ETH`, "#38bdf8");
 
-        // Afișăm furnicile doar dacă robotul le-a generat
-        if (data.furnici && data.furnici.length > 0) {
-            data.furnici.forEach((f) => {
-                const icon = f.livrat ? "✅" : "🐜";
-                addLog(`${icon} Node ${f.index}: ${f.livrat ? 'DISPERSED' : 'WAITING'} (ETA: ${f.minute}m)`, f.livrat ? "#10b981" : "#fbbf24");
-            });
-        } else {
-            // Mesajul pe care îl vezi tu acum în log-uri
-            addLog("🐜 [WAIT] Node 1 - Establishing stealth path...", "#fbbf24");
+                    if (data.furnici && data.furnici.length > 0) {
+                        data.furnici.forEach((f) => {
+                            const icon = f.livrat ? "✅" : "🐜";
+                            addLog(`${icon} Node ${f.index}: ${f.livrat ? 'DISPERSED' : 'WAITING'} (ETA: ${f.minute}m)`, f.livrat ? "#10b981" : "#fbbf24");
+                        });
+                    } else {
+                        addLog("🐜 [WAIT] Node 1 - Establishing stealth path...", "#fbbf24");
+                    }
+                } else {
+                    led.style.background = '#fbbf24';
+                    text.innerText = "WAITING";
+                    addLog("[WAIT] Scanning BASE blockchain for deposit...", "#fbbf24");
+                }
+            }
+        } catch (e) {
+            console.error("Eroare status:", e);
         }
-    } else {
-        // Dacă statusul e PENDING sau altceva
-        led.style.background = '#fbbf24';
-        text.innerText = "WAITING";
-        addLog("[WAIT] Scanning BASE blockchain for deposit...", "#fbbf24");
-    }
-} else {
-    addLog("[ERROR] Invalid Key or Session Expired.", "#ef4444");
-}
+    } // <--- AICI ERA ÎNCHIDEREA CARE LIPSEA!
+
     async function processWithdraw() {
-        const parola = document.getElementById('inputCod').value.trim().toUpperCase();
+        // Luăm parola din input sau din textul generat
+        const parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
         const dest = document.getElementById('inputDest').value.trim();
-        if(!parola || !dest) return addLog("[ERROR] Fields required!", "#ef4444");
+
+        if(!parola || !dest || dest.length < 20) {
+            return addLog("[ERROR] Valid Destination Address required!", "#ef4444");
+        }
 
         addLog(">> Initiating Dispersion...", "#fbbf24");
         try {
@@ -224,24 +227,37 @@ if (data && data.status) {
             const data = await res.json();
             if (data.succes) {
                 addLog("🚀 [VORTEX] Routing engaged!", "#00ffcc");
-                setInterval(checkBalance, 20000);
-            } else { addLog(`[ERROR] ${data.eroare}`, "#ef4444"); }
-        } catch (e) { addLog("[ERROR] Request failed.", "#ef4444"); }
+                // Pornim verificarea automată la fiecare 10 secunde
+                setInterval(checkBalance, 10000);
+            } else { 
+                addLog(`[ERROR] ${data.eroare}`, "#ef4444"); 
+            }
+        } catch (e) { 
+            addLog("[ERROR] Request failed. Check VPS connection.", "#ef4444"); 
+        }
     }
 
-    // Notifications Loop
+    // Funcția de ajutor pentru terminal
+    function addLog(message, color) {
+        const log = document.getElementById('terminalLog');
+        const line = document.createElement('div');
+        line.style.color = color;
+        line.style.marginBottom = "5px";
+        line.innerHTML = `<span style="color: #475569;">[${new Date().toLocaleTimeString()}]</span> ${message}`;
+        log.prepend(line);
+    }
+
+    // Notifications Loop (Rămâne la fel)
     const activities = ["New Vault Generated", "Mix: 0.15 ETH completed", "Relayer: Funds broadcasted"];
     function showNotification() {
         const area = document.getElementById('notification-area');
+        if(!area) return;
         const toast = document.createElement('div');
-        const text = activities[Math.floor(Math.random() * activities.length)];
-        toast.style.cssText = `background: #0f172a; color: #38bdf8; border: 1px solid #1e293b; border-left: 4px solid #10b981; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 10px; font-family: monospace; animation: fadeInRight 0.5s ease-out;`;
-        toast.innerHTML = `<span style="color: #64748b;">[${new Date().toLocaleTimeString()}]</span> ${text}`;
+        const textNotify = activities[Math.floor(Math.random() * activities.length)];
+        toast.style.cssText = `background: #0f172a; color: #38bdf8; border: 1px solid #1e293b; border-left: 4px solid #10b981; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 10px; font-family: monospace;`;
+        toast.innerHTML = `<span style="color: #64748b;">[${new Date().toLocaleTimeString()}]</span> ${textNotify}`;
         area.appendChild(toast);
-        setTimeout(() => {
-            toast.style.animation = "fadeOut 0.5s ease-in";
-            setTimeout(() => toast.remove(), 500);
-        }, 4000);
+        setTimeout(() => toast.remove(), 4000);
     }
     setInterval(showNotification, 15000);
 </script>
