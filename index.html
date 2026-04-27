@@ -171,48 +171,58 @@
             }
         } catch (e) { addLog("[ERROR] API offline.", "#ef4444"); }
     }
+async function checkBalance() {
+    const inputVal = document.getElementById('inputCod').value.trim();
+    const textVal = document.getElementById('codText').innerText;
+    let parola = (inputVal || textVal).toUpperCase();
 
-    // 5. VERIFICARE BALANȚĂ (CITEȘTE DIN ROBOT)
-    async function checkBalance() {
-        const inputVal = document.getElementById('inputCod').value.trim();
-        const textVal = document.getElementById('codText').innerText;
-        let parola = (inputVal || textVal).toUpperCase();
+    const led = document.getElementById('statusLed');
+    const text = document.getElementById('statusText');
+    const log = document.getElementById('terminalLog');
 
-        if(!parola || parola.includes("XXXX")) return;
+    if(!parola || parola.includes("XXXX")) return; 
 
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola })
-            });
-            if (res.status === 404) return;
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola: parola }) 
+        });
 
-            const data = await res.json();
-            const led = document.getElementById('statusLed');
-            const text = document.getElementById('statusText');
-            const log = document.getElementById('terminalLog');
+        if (res.status === 404) return;
 
-            if (data && data.status) {
-                led.style.background = '#10b981';
-                text.innerText = `${data.status}: ${data.suma} ETH`;
+        const data = await res.json();
+        const statusReal = data.status || "PENDING";
+        const sumaReala = data.suma || data.sumaUltima || "0";
+        
+        if (statusReal.toUpperCase() !== "PENDING") {
+            led.style.background = '#10b981';
+            text.innerText = `${statusReal}: ${sumaReala} ETH`;
 
-                // Log-ul furnicilor dacă există în JSON
-                if (data.furnici && data.furnici.length > 0) {
-                    data.furnici.forEach((f) => {
-                        const checkMsg = `Node ${f.index}:`;
-                        if (!log.innerText.includes(checkMsg + (f.livrat ? ' DISPERSED' : ' WAITING'))) {
-                            const icon = f.livrat ? "✅" : "🐜";
-                            addLog(`${icon} Node ${f.index}: ${f.livrat ? 'DISPERSED' : 'WAITING'} (ETA: ${f.minute}m)`, f.livrat ? "#10b981" : "#fbbf24");
-                        }
-                    });
-                }
+            if (!log.innerText.includes("Detected: " + sumaReala)) {
+                addLog(`[VORTEX] Session identified: ${parola}`, "#38bdf8");
+                addLog(`[SESS] Balance Detected: ${sumaReala} ETH`, "#10b981");
             }
-        } catch (e) { console.error(e); }
-    }
 
-    // 6. RETRAGERE (BUTONUL CARE TREBUIE SĂ MEARGĂ)
-    async function processWithdraw() {
+            if (data.furnici && data.furnici.length > 0) {
+                data.furnici.forEach((f) => {
+                    const uniqueId = `Node ${f.index || f.id}:`;
+                    if (!log.innerText.includes(uniqueId)) {
+                        const icon = f.livrat ? "✅" : "🐜";
+                        const col = f.livrat ? "#10b981" : "#fbbf24";
+                        addLog(`${icon} ${uniqueId} ${f.livrat ? 'DISPERSED' : 'IN TRANSIT'} (ETA: ${f.minute || '?'}m)`, col);
+                    }
+                });
+            }
+        } else {
+            led.style.background = '#fbbf24';
+            text.innerText = "WAITING";
+        }
+    } catch (e) {
+        console.log("Eroare comunicare robot:", e);
+    }
+} 
+async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
         const parola = (inputVal || textVal).toUpperCase();
