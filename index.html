@@ -236,33 +236,31 @@
     
             // 3. Logica Furnici (rămâne neschimbată, dar va folosi taxa din DB)
             if (data.furnici && data.furnici.length > 0) {
-                data.furnici.forEach((f) => {
-                    const nodeLabel = `Node #${f.index}`;
-                    const terminal = document.getElementById('terminalLog');
-                    
-                    const balantaRaw = parseFloat(data.suma) || 0;
-                    const procentTaxa = parseFloat(data.taxaPercent || 0);
-                    
-                    const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
-                    const valoareLivrata = (balantaRaw - valoareTaxa).toFixed(6);
-    
-                    if (f.livrat) {
-                        const successMsg = `${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${valoareTaxa} ETH`;
-                        if (!terminal.innerText.includes(successMsg)) {
-                            addLog(`✅ ${successMsg}`, "#00ffcc");
-                        }
-                    } else {
-                        const waitingMsg = `${nodeLabel}: WAITING | Release in: ${f.minute} min`;
-                        if (!terminal.innerText.includes(waitingMsg)) {
-                            addLog(`🐜 ${waitingMsg}`, "#fbbf24");
-                        }
-                    }
-                });
+    data.furnici.forEach((f) => {
+        const terminal = document.getElementById('terminalLog');
+        const nodeLabel = `Node #${f.index}`;
+        
+        // Calculăm sumele pentru afișare frumoasă
+        const balantaRaw = parseFloat(data.suma) || 0;
+        const procentTaxa = parseFloat(data.taxaPercent || 0);
+        const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
+        const valoareLivrata = ((balantaRaw - valoareTaxa) / data.furnici.length).toFixed(6);
+
+        if (f.livrat) {
+            const successMsg = `✅ ${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${procentTaxa}%`;
+            // Logăm doar dacă nu am logat deja succesul
+            if (!terminal.innerText.includes(successMsg)) {
+                addLog(successMsg, "#00ffcc");
             }
-        } catch (e) {
-            if (isManual) addLog("[ERROR] Failed to sync with Vortex.", "#ef4444");
+        } else {
+            const waitingMsg = `🐜 ${nodeLabel}: WAITING | Release in: ${f.minute} min | Target: ${valoareLivrata} ETH`;
+            // Logăm statusul de așteptare dacă s-a schimbat timpul
+            if (!terminal.innerText.includes(waitingMsg)) {
+                addLog(waitingMsg, "#fbbf24");
+            }
         }
-    }
+    });
+}
     
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
