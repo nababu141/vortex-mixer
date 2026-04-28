@@ -50,41 +50,50 @@
             <p><b style="color: #10b981;">● Fee:</b> 0.8% - 1.99%</p>
         </div>
 
-        <div style="margin-top: 20px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-    <label style="font-size: 0.7rem; color: #94a3b8; display: block; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">QUICK VAULT CHECK</label>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="margin-top: 25px; width: 100%; display: flex; flex-direction: column; gap: 15px;">
+    
+    <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <label style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">Vault Interrogation</label>
         <input type="text" id="inputCod" placeholder="NABABU-XXXX" 
-            style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; font-size: 0.8rem; text-align: center; outline: none;">
+            style="width: 100%; background: #020617; border: 1px solid #334155; color: #10b981; padding: 14px; border-radius: 8px; font-size: 1rem; text-align: center; outline: none; font-family: 'Courier New', monospace; margin-bottom: 12px; box-sizing: border-box;">
+        
         <button onclick="checkBalance(true)" 
-            style="width: 100%; background: #1e293b; color: #10b981; border: 1px solid #10b981; padding: 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.3s;"
-            onmouseover="this.style.background='#10b981'; this.style.color='#0f172a'" 
-            onmouseout="this.style.background='#1e293b'; this.style.color='#10b981'">
-            SCAN VAULT STATUS
+            style="width: 100%; background: linear-gradient(90deg, #1e293b, #0f172a); color: #10b981; border: 1px solid #10b981; padding: 14px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;">
+            Scan Status
         </button>
     </div>
 
-    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
-        <div style="display: flex; justify-content: space-around; margin-bottom: 10px; opacity: 0.6;">
-            <img src="https://cryptologos.cc/logos/base-base-logo.png" width="14" title="Base">
-            <img src="https://cryptologos.cc/logos/arbitrum-arb-logo.png" width="14" title="Arbitrum">
-            <img src="https://cryptologos.cc/logos/optimism-ethereum-op-logo.png" width="14" title="Optimism">
+    <div style="background: rgba(30, 41, 59, 0.3); padding: 15px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.1);">
+        <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 15px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <img src="https://cryptologos.cc/logos/base-base-logo.png" width="22" style="filter: drop-shadow(0 0 5px #0052ff);">
+                <span style="font-size: 0.6rem; color: #38bdf8; font-weight: bold;">BASE</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <img src="https://cryptologos.cc/logos/arbitrum-arb-logo.png" width="22" style="filter: drop-shadow(0 0 5px #28a0f0);">
+                <span style="font-size: 0.6rem; color: #38bdf8; font-weight: bold;">ARB</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <img src="https://cryptologos.cc/logos/optimism-ethereum-op-logo.png" width="22" style="filter: drop-shadow(0 0 5px #ff0420);">
+                <span style="font-size: 0.6rem; color: #38bdf8; font-weight: bold;">OPT</span>
+            </div>
         </div>
-        
-        <table style="width: 100%; font-size: 9px; color: #64748b; border-collapse: collapse;">
-            <tr>
-                <td style="padding: 2px 0;">Retail (< 1 ETH)</td>
-                <td style="text-align: right; color: #94a3b8;">0.75 - 2.25%</td>
-            </tr>
-            <tr>
-                <td style="padding: 2px 0;">VIP (> 10 ETH)</td>
-                <td style="text-align: right; color: #10b981;">0.15 - 0.45%</td>
-            </tr>
-        </table>
-        <p style="font-size: 8px; color: #475569; text-align: center; margin-top: 8px; font-style: italic;">
-            *Auto-detecting L2 Network
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); pt-15; margin-top: 10px; padding-top: 10px;">
+            <div>
+                <span style="display: block; font-size: 0.6rem; color: #64748b; text-transform: uppercase;">Retail (< 1 ETH)</span>
+                <span style="font-size: 0.9rem; color: #f1f5f9; font-weight: 600;">0.75% - 2.25%</span>
+            </div>
+            <div style="text-align: right;">
+                <span style="display: block; font-size: 0.6rem; color: #64748b; text-transform: uppercase;">Whale (> 10 ETH)</span>
+                <span style="font-size: 0.9rem; color: #10b981; font-weight: 800;">0.15% - 0.45%</span>
+            </div>
+        </div>
+        <p style="font-size: 0.65rem; color: #475569; text-align: center; margin-top: 12px; font-style: italic; letter-spacing: 0.5px;">
+            📡 Omni-Chain Intelligence Active
         </p>
     </div>
-    </div>
+</div>
      
 
     <div class="container">
