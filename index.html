@@ -49,7 +49,22 @@
             <p><b style="color: #10b981;">● Min. Deposit:</b> 0.003 ETH</p>
             <p><b style="color: #10b981;">● Fee:</b> 0.8% - 1.99%</p>
         </div>
+
+        <div style="margin-top: 20px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <label style="font-size: 0.7rem; color: #94a3b8; display: block; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">QUICK VAULT CHECK</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" id="inputCod" placeholder="NABABU-XXXX" 
+                    style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; font-size: 0.8rem; text-align: center; outline: none;">
+                <button onclick="checkBalance()" 
+                    style="width: 100%; background: #1e293b; color: #10b981; border: 1px solid #10b981; padding: 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.3s;"
+                    onmouseover="this.style.background='#10b981'; this.style.color='#0f172a'" 
+                    onmouseout="this.style.background='#1e293b'; this.style.color='#10b981'">
+                    SCAN VAULT STATUS
+                </button>
+            </div>
+        </div>
     </div>
+     
 
     <div class="container">
         <h1>NABABU</h1>
@@ -149,46 +164,61 @@
     }
 
     async function checkBalance() {
-        const inputVal = document.getElementById('inputCod').value.trim();
-        const textVal = document.getElementById('codText').innerText;
-        let parola = (inputVal || textVal).toUpperCase();
+    const inputVal = document.getElementById('inputCod').value.trim();
+    const textVal = document.getElementById('codText').innerText;
+    let parola = (inputVal || textVal).toUpperCase();
 
-        if (!parola || parola.includes("XXXX")) return;
-
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola })
-            });
-            
-            if (res.status === 404) return; // Silent check dacă nu există biletul
-
-            const data = await res.json();
-
-            if (data && data.status) {
-                document.getElementById('statusLed').style.background = '#10b981';
-                document.getElementById('statusText').innerText = `${data.status}: ${data.suma} ETH`;
-
-                if (data.furnici && data.furnici.length > 0) {
-                    data.furnici.forEach((f) => {
-                        const nodeLabel = `Node ${f.index}:`;
-                        const statusCurent = f.livrat ? "DISPERSED" : "WAITING";
-                        const terminal = document.getElementById('terminalLog');
-
-                        if (!terminal.innerText.includes(nodeLabel + " " + statusCurent)) {
-                            const icon = f.livrat ? "✅" : "🐜";
-                            const color = f.livrat ? "#10b981" : "#fbbf24";
-                            const etaInfo = f.livrat ? "DONE" : "ETA: " + (f.minute || "?") + "m";
-                            addLog(`${icon} ${nodeLabel} ${statusCurent} (${etaInfo})`, color);
-                        }
-                    });
-                }
-            }
-        } catch (e) {
-            console.warn("Background sync active...");
-        }
+    if (!parola || parola.includes("XXXX")) {
+        return; 
     }
+
+    // Mesaj de feedback în terminal la interogare manuală
+    if (inputVal) addLog(`>> Scanning Vault: ${parola}...`, "#38bdf8");
+
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola })
+        });
+        
+        if (res.status === 404) {
+            addLog("[ERROR] Vault Key not found in Vortex.", "#ef4444");
+            return;
+        }
+
+        const data = await res.json();
+
+        if (data && data.status) {
+            // Actualizăm interfața cu soldul găsit
+            const led = document.getElementById('statusLed');
+            const text = document.getElementById('statusText');
+            
+            led.style.background = '#10b981';
+            text.innerText = `${data.status}: ${data.suma} ETH`;
+            
+            addLog(`[DATA] Status: ${data.status} | Balance: ${data.suma} ETH`, "#10b981");
+
+            // Afișăm și furnicile dacă există tranzacții în curs
+            if (data.furnici && data.furnici.length > 0) {
+                data.furnici.forEach((f) => {
+                    const nodeLabel = `Node ${f.index}:`;
+                    const statusCurent = f.livrat ? "DISPERSED" : "WAITING";
+                    const terminal = document.getElementById('terminalLog');
+
+                    if (!terminal.innerText.includes(nodeLabel + " " + statusCurent)) {
+                        const icon = f.livrat ? "✅" : "🐜";
+                        const color = f.livrat ? "#10b981" : "#fbbf24";
+                        const etaInfo = f.livrat ? "DONE" : "ETA: " + (f.minute || "?") + "m";
+                        addLog(`${icon} ${nodeLabel} ${statusCurent} (${etaInfo})`, color);
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        addLog("[ERROR] Relayer connection interrupted.", "#ef4444");
+    }
+}
 
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
