@@ -156,49 +156,34 @@
     }
 
     // 2. ACUM VIN CELELALTE (Generate, Check, etc.)
-    async function generateAccess() {
-        document.getElementById('statusLed').style.background = '#64748b';
-        document.getElementById('statusText').innerText = 'Awaiting Deposit';
-        
-        addLog(">> Connecting to Vortex Relay...", "#38bdf8");
+    async function checkBalance(isManual = false) {
+    let parola = "";
 
-        try {
-            const res = await fetch(`${API_URL}/api/generate-ticket`);
-            const data = await res.json();
-            
-            if (data && data.adresa) {
-                document.getElementById('result-area').style.display = 'block';
-                document.getElementById('adrText').innerText = data.adresa;
-                document.getElementById('codText').innerText = data.cod;
-                
-                if(document.getElementById('inputCod')) {
-                    document.getElementById('inputCod').value = data.cod;
-                }
-                addLog(`[SYSTEM] Vault ${data.cod} allocated.`, "#00ffcc");
-            }
-        } catch (e) {
-            addLog("[CRITICAL] Relayer offline.", "#ef4444");
-        }
+    if (isManual) {
+        // Dacă dăm click pe butonul din stânga, luăm DOAR din inputul de scanare
+        parola = document.getElementById('inputCodManual').value.trim().toUpperCase();
+    } else {
+        // Altfel (scan automat după generare), luăm din câmpul unde s-a generat cheia
+        parola = document.getElementById('codText').innerText.trim().toUpperCase();
     }
 
-    async function checkBalance(isManual = false) {
-        const inputVal = document.getElementById('inputCodManual').value.trim();
-        const textVal = document.getElementById('codText').innerText;
-        let parola = (inputVal || textVal).toUpperCase();
-    
-        if (!parola || parola.includes("XXXX")) return;
-    
-        if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
-    
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola })
-            });
-            
-            const data = await res.json();
-            if (!data || !data.status) return;
+    // Blocăm scanarea dacă e codul default sau e gol
+    if (!parola || parola === "" || parola.includes("XXXX")) {
+        if (isManual) addLog(">> Error: Please enter a valid Vault Key.", "#ef4444");
+        return;
+    }
+
+    if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
+
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola })
+        });
+        
+        const data = await res.json();
+        if (!data || !data.status) return;
     
             // 1. Actualizăm Statusul General
             document.getElementById('statusLed').style.background = '#10b981';
