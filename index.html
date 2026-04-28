@@ -147,78 +147,67 @@
         log.scrollTop = log.scrollHeight;
     }
 
-    async function generateAccess() {
-        addLog(">> Connecting to Vortex Relay...", "#38bdf8");
+    async function checkBalance(isManual = false) {
+        const inputVal = document.getElementById('inputCod').value.trim();
+        const textVal = document.getElementById('codText').innerText;
+        let parola = (inputVal || textVal).toUpperCase();
+
+        if (!parola || parola.includes("XXXX")) return;
+    
+        if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
+    
         try {
-            const res = await fetch(`${API_URL}/api/generate-ticket`);
+            const res = await fetch(`${API_URL}/api/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola })
+            });
+            
             const data = await res.json();
-            if (data.adresa) {
-                document.getElementById('result-area').style.display = 'block';
-                document.getElementById('adrText').innerText = data.adresa;
-                document.getElementById('codText').innerText = data.cod;
-                addLog(`[SYSTEM] Vault ${data.cod} allocated.`, "#00ffcc");
+            if (!data || !data.status) return;
+    
+            // 1. Actualizăm UI-ul (LED și Text) - asta se face mereu, dar tăcut
+            document.getElementById('statusLed').style.background = '#10b981';
+            document.getElementById('statusText').innerText = `${data.status}: ${data.suma} ETH`;
+    
+            // 2. LOGICĂ TERMINAL: Afișăm statusul general DOAR dacă s-a schimbat sau e cerere manuală
+            const currentStatusLine = `${data.status} | ${data.suma} ETH`;
+            if (isManual || currentStatusLine !== lastStatusLog) {
+                addLog(`[SYSTEM] Status: ${data.status} | Total: ${data.suma} ETH`, "#10b981");
+                lastStatusLog = currentStatusLine; // Salvăm ca să nu repetăm
             }
-        } catch (e) {
-            addLog("[CRITICAL] API connection failed.", "#ef4444");
-        }
-    }
-
-    async function checkBalance() {
-    const inputVal = document.getElementById('inputCod').value.trim();
-    const textVal = document.getElementById('codText').innerText;
-    let parola = (inputVal || textVal).toUpperCase();
-
-    if (!parola || parola.includes("XXXX")) {
-        return; 
-    }
-
-    // Mesaj de feedback în terminal la interogare manuală
-    if (inputVal) addLog(`>> Scanning Vault: ${parola}...`, "#38bdf8");
-
-    try {
-        const res = await fetch(`${API_URL}/api/status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola })
-        });
-        
-        if (res.status === 404) {
-            addLog("[ERROR] Vault Key not found in Vortex.", "#ef4444");
-            return;
-        }
-
-        const data = await res.json();
-
-        if (data && data.status) {
-            // Actualizăm interfața cu soldul găsit
-            const led = document.getElementById('statusLed');
-            const text = document.getElementById('statusText');
-            
-            led.style.background = '#10b981';
-            text.innerText = `${data.status}: ${data.suma} ETH`;
-            
-            addLog(`[DATA] Status: ${data.status} | Balance: ${data.suma} ETH`, "#10b981");
-
-            // Afișăm și furnicile dacă există tranzacții în curs
+    
+            // 3. LOGICĂ FURNIZI (Livrări și Taxe)
             if (data.furnici && data.furnici.length > 0) {
                 data.furnici.forEach((f) => {
-                    const nodeLabel = `Node ${f.index}:`;
-                    const statusCurent = f.livrat ? "DISPERSED" : "WAITING";
+                    const nodeLabel = `Node #${f.index}`;
                     const terminal = document.getElementById('terminalLog');
-
-                    if (!terminal.innerText.includes(nodeLabel + " " + statusCurent)) {
-                        const icon = f.livrat ? "✅" : "🐜";
-                        const color = f.livrat ? "#10b981" : "#fbbf24";
-                        const etaInfo = f.livrat ? "DONE" : "ETA: " + (f.minute || "?") + "m";
-                        addLog(`${icon} ${nodeLabel} ${statusCurent} (${etaInfo})`, color);
+                    
+                    // Calculăm sumele pentru afișare
+                    const sumaTotala = parseFloat(data.suma);
+                    const taxaProcent = parseFloat(data.taxa) || 0;
+                    const sumaTaxa = (sumaTotala * (taxaProcent / 100)).toFixed(6);
+                    const sumaLivrata = (sumaTotala - sumaTaxa).toFixed(6);
+    
+                    if (f.livrat) {
+                        // Dacă e livrat, afișăm mesajul de succes cu detalii (o singură dată)
+                        const successMsg = `${nodeLabel}: DISPERSED | Sent: ${sumaLivrata} ETH | Fee: ${sumaTaxa} ETH`;
+                        if (!terminal.innerText.includes(successMsg)) {
+                            addLog(`✅ ${successMsg}`, "#00ffcc");
+                        }
+                    } else {
+                        // Dacă e în așteptare, afișăm timpul rămas (o singură dată per status)
+                        const waitingMsg = `${nodeLabel}: WAITING | Release in: ${f.minute} min`;
+                        if (!terminal.innerText.includes(waitingMsg)) {
+                            addLog(`🐜 ${waitingMsg}`, "#fbbf24");
+                        }
                     }
                 });
             }
+        } catch (e) {
+            if (isManual) addLog("[ERROR] Failed to sync with Vortex.", "#ef4444");
         }
-    } catch (e) {
-        addLog("[ERROR] Relayer connection interrupted.", "#ef4444");
     }
-}
 
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
