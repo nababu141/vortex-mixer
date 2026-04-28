@@ -121,145 +121,122 @@
 <script>
     const API_URL = "https://api.nababu.io";
 
-    // 1. FUNCȚIA DE LOG (REPARATĂ SĂ CURGĂ ÎN JOS)
+    // 1. Funcția de Log - Reparată să curgă ÎN JOS
     function addLog(msg, color = "#10b981") {
         const log = document.getElementById('terminalLog');
         if (!log) return;
-
+        
         const line = document.createElement('div');
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         
         line.style.marginBottom = "5px";
-        line.style.fontSize = "12px";
+        line.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
         line.innerHTML = `<span style="color: #475569;">[${time}]</span> <span style="color: ${color};">${msg}</span>`;
         
-        // appendChild pune mesajul la final (JOS)
-        log.appendChild(line); 
-        
-        // Scroll automat la ultimul rând
-        log.scrollTop = log.scrollHeight;
+        log.appendChild(line); // Adaugă la finalul listei
+        log.scrollTop = log.scrollHeight; // Sare automat la ultimul mesaj
     }
 
-    // 2. FUNCȚIE PENTRU TAB-URI
+    // 2. Verificare Status (Legătura directă cu Robotul)
+    async function checkBalance() {
+        const inputVal = document.getElementById('inputCod').value.trim();
+        const textVal = document.getElementById('codText').innerText;
+        let parola = (inputVal || textVal).toUpperCase();
+
+        const led = document.getElementById('statusLed');
+        const text = document.getElementById('statusText');
+        const log = document.getElementById('terminalLog');
+
+        if(!parola || parola.includes("XXXX")) return;
+
+        try {
+            const res = await fetch(`${API_URL}/api/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola })
+            });
+
+            if (res.status === 404) return;
+            const data = await res.json();
+
+            if (data && data.status) {
+                // Actualizăm LED-ul și textul de status principal
+                const isReady = ["CONFIRMED", "PROCESSING", "SENDING", "COMPLETED"].includes(data.status.toUpperCase());
+                led.style.background = isReady ? '#10b981' : '#fbbf24';
+                text.innerText = `${data.status}: ${data.suma} ETH`;
+
+                // Logăm sesiunea doar dacă e prima dată când o vedem în terminal
+                if (!log.innerText.includes("Active Session: " + parola)) {
+                    addLog(`>> Active Session Found: ${parola}`, "#38bdf8");
+                    addLog(`>> Available for Withdrawal: ${data.suma} ETH`, "#10b981");
+                }
+
+                // AFISARE FURNIZATĂ DE ROBOT (Aici comunică direct cu logica lui)
+                if (data.furnici && data.furnici.length > 0) {
+                    data.furnici.forEach((f) => {
+                        const nodeLabel = `Node ${f.index}:`;
+                        // Verificăm dacă statusul acestui nod s-a schimbat înainte de a loga
+                        const statusCurentNode = f.livrat ? "DISPERSED" : "WAITING";
+                        if (!log.innerText.includes(nodeLabel + " " + statusCurentNode)) {
+                            const icon = f.livrat ? "✅" : "🐜";
+                            const color = f.livrat ? "#10b981" : "#fbbf24";
+                            addLog(`${icon} ${nodeLabel} ${statusCurentNode} (ETA: ${f.minute || '?'}m)`, color);
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Eroare legătură robot.");
+        }
+    }
+
+    // 3. Declanșare Retragere
+    async function processWithdraw() {
+        const inputVal = document.getElementById('inputCod').value.trim();
+        const textVal = document.getElementById('codText').innerText;
+        const parola = (inputVal || textVal).toUpperCase();
+        const dest = document.getElementById('inputDest').value.trim();
+
+        if(!parola || !dest || dest.length < 40) {
+            addLog("[ERROR] Valid Key and BASE Address required!", "#ef4444");
+            return;
+        }
+
+        addLog(`>> Initiating dispersal to ${dest.substring(0,6)}...`, "#fbbf24");
+
+        try {
+            const res = await fetch(`${API_URL}/api/withdraw`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola, adresaDestinatie: dest })
+            });
+            const data = await res.json();
+            
+            if (data.succes) {
+                addLog("🚀 [VORTEX] Dispersal sequence engaged!", "#00ffcc");
+                // Pornim monitorizarea automată la fiecare 10 secunde
+                setInterval(checkBalance, 10000);
+            } else {
+                addLog(`[DENIED] ${data.eroare}`, "#ef4444");
+            }
+        } catch (e) {
+            addLog("[ERROR] Failed to contact Relayer.", "#ef4444");
+        }
+    }
+
+    // Funcții de UI
     function showTab(id) {
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        
         document.getElementById(id).classList.add('active');
-        // Adăugăm clasa active pe butonul apăsat
-        event.currentTarget.classList.add('active');
+        if(event) event.currentTarget.classList.add('active');
     }
 
-    // 3. COPIERE
     function copy(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text);
         addLog(`Copied: ${text.substring(0, 15)}...`, "#38bdf8");
     }
-
-    // 4. GENERARE ACCES
-    async function generateAccess() {
-        addLog(">> Connecting to Vortex Relay...", "#38bdf8");
-        try {
-            const res = await fetch(`${API_URL}/api/generate-ticket`);
-            const data = await res.json();
-            if (data.adresa) {
-                document.getElementById('result-area').style.display = 'block';
-                document.getElementById('adrText').innerText = data.adresa;
-                document.getElementById('codText').innerText = data.cod;
-                addLog(`[SUCCESS] Vault ${data.cod} generated.`, "#00ffcc");
-            }
-        } catch (e) { addLog("[ERROR] API offline.", "#ef4444"); }
-    }
-    
-async function checkBalance() {
-    const inputVal = document.getElementById('inputCod').value.trim();
-    const textVal = document.getElementById('codText').innerText;
-    let parola = (inputVal || textVal).toUpperCase();
-
-    if(!parola || parola.includes("XXXX")) return;
-
-    try {
-        console.log("Trimit cerere pentru:", parola); // Vezi în F12
-        const res = await fetch(`${API_URL}/api/status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola: parola })
-        });
-
-        const data = await res.json();
-        console.log("Robotul a răspuns cu:", data); // Aici vedem „marfa”
-
-        const led = document.getElementById('statusLed');
-        const text = document.getElementById('statusText');
-
-        // Dacă robotul a găsit codul, dăm semnalul verde
-        if (data && (data.status || data.suma || data.sumaUltima)) {
-            led.style.background = '#10b981';
-            
-            // Luăm suma indiferent cum o numește robotul (suma sau sumaUltima)
-            const afiseazaSuma = data.suma || data.sumaUltima || "0.00";
-            const afiseazaStatus = data.status || "ACTIVE";
-            
-            text.innerText = `${afiseazaStatus}: ${afiseazaSuma} ETH`;
-
-            // Scriem în terminalul site-ului ca să fim siguri
-            if (!document.getElementById('terminalLog').innerText.includes("CONNECTED")) {
-                addLog(`>> SYSTEM CONNECTED: ${parola}`, "#10b981");
-                addLog(`>> ASSETS: ${afiseazaSuma} ETH`, "#38bdf8");
-            }
-            
-            // Verificăm furnicile
-            if (data.furnici && data.furnici.length > 0) {
-                data.furnici.forEach(f => {
-                    if (!document.getElementById('terminalLog').innerText.includes("Node " + f.index)) {
-                        addLog(`🐜 Node ${f.index}: ${f.livrat ? 'DONE' : 'WAITING'}`, f.livrat ? "#10b981" : "#fbbf24");
-                    }
-                });
-            }
-        } else {
-            addLog(">> Scanning... No funds detected yet.", "#64748b");
-        }
-
-    } catch (e) {
-        console.error("Eroare la fetch:", e);
-        addLog(">> CONNECTION ERROR - CHECK API URL", "#ef4444");
-    }
-}
-    
-async function processWithdraw() {
-    const parola = (document.getElementById('inputCod').value.trim() || document.getElementById('codText').innerText).toUpperCase();
-    const dest = document.getElementById('inputDest').value.trim();
-
-    if(!dest || dest.length < 40) return addLog("[ERROR] Invalid Destination.", "#ef4444");
-
-    addLog(`>> Routing sequence started for ${parola}...`, "#38bdf8");
-
-    try {
-        const res = await fetch(`${API_URL}/api/withdraw`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola, adresaDestinatie: dest })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            addLog("🚀 [VORTEX] Ants dispersed! Check terminal for updates.", "#00ffcc");
-            // Pornim monitorizarea intensivă
-            setInterval(checkBalance, 15000);
-        } else {
-            // Dacă primim "Invalid or Active", îi dăm userului opțiunea să știe că se lucrează
-            if(data.eroare === "Invalid or active") {
-                addLog("⚠️ [ACTIVE] Transaction already in progress. Please wait for nodes.", "#fbbf24");
-            } else {
-                addLog(`[ERROR] ${data.eroare}`, "#ef4444");
-            }
-        }
-    } catch (e) {
-        addLog("[ERROR] Failed to connect to Relayer.", "#ef4444");
-    }
-}
 </script>
 </body>
 </html>
