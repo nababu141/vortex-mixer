@@ -51,18 +51,39 @@
         </div>
 
         <div style="margin-top: 20px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <label style="font-size: 0.7rem; color: #94a3b8; display: block; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">QUICK VAULT CHECK</label>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <input type="text" id="inputCod" placeholder="NABABU-XXXX" 
-                    style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; font-size: 0.8rem; text-align: center; outline: none;">
-                <button onclick="checkBalance(true)" 
-                    style="width: 100%; background: #1e293b; color: #10b981; border: 1px solid #10b981; padding: 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.3s;"
-                    onmouseover="this.style.background='#10b981'; this.style.color='#0f172a'" 
-                    onmouseout="this.style.background='#1e293b'; this.style.color='#10b981'">
-                    SCAN VAULT STATUS
-                </button>
-            </div>
+    <label style="font-size: 0.7rem; color: #94a3b8; display: block; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">QUICK VAULT CHECK</label>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <input type="text" id="inputCod" placeholder="NABABU-XXXX" 
+            style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; font-size: 0.8rem; text-align: center; outline: none;">
+        <button onclick="checkBalance(true)" 
+            style="width: 100%; background: #1e293b; color: #10b981; border: 1px solid #10b981; padding: 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.3s;"
+            onmouseover="this.style.background='#10b981'; this.style.color='#0f172a'" 
+            onmouseout="this.style.background='#1e293b'; this.style.color='#10b981'">
+            SCAN VAULT STATUS
+        </button>
+    </div>
+
+    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: flex; justify-content: space-around; margin-bottom: 10px; opacity: 0.6;">
+            <img src="https://cryptologos.cc/logos/base-base-logo.png" width="14" title="Base">
+            <img src="https://cryptologos.cc/logos/arbitrum-arb-logo.png" width="14" title="Arbitrum">
+            <img src="https://cryptologos.cc/logos/optimism-ethereum-op-logo.png" width="14" title="Optimism">
         </div>
+        
+        <table style="width: 100%; font-size: 9px; color: #64748b; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 2px 0;">Retail (< 1 ETH)</td>
+                <td style="text-align: right; color: #94a3b8;">0.75 - 2.25%</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px 0;">VIP (> 10 ETH)</td>
+                <td style="text-align: right; color: #10b981;">0.15 - 0.45%</td>
+            </tr>
+        </table>
+        <p style="font-size: 8px; color: #475569; text-align: center; margin-top: 8px; font-style: italic;">
+            *Auto-detecting L2 Network
+        </p>
+    </div>
     </div>
      
 
@@ -176,59 +197,73 @@
     }
 
     async function checkBalance(isManual = false) {
-        const inputVal = document.getElementById('inputCod').value.trim();
-        const textVal = document.getElementById('codText').innerText;
-        let parola = (inputVal || textVal).toUpperCase();
+    const inputVal = document.getElementById('inputCod').value.trim();
+    const textVal = document.getElementById('codText').innerText;
+    let parola = (inputVal || textVal).toUpperCase();
 
-        if (!parola || parola.includes("XXXX")) return;
+    if (!parola || parola.includes("XXXX")) return;
 
-        if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
+    if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
 
-        try {
-            const res = await fetch(`${API_URL}/api/status`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ parola })
-            });
-            
-            const data = await res.json();
-            if (!data || !data.status) return;
+    try {
+        const res = await fetch(`${API_URL}/api/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parola })
+        });
+        
+        const data = await res.json();
+        if (!data || !data.status) return;
 
-            document.getElementById('statusLed').style.background = '#10b981';
-            document.getElementById('statusText').innerText = `${data.status}: ${data.suma} ETH`;
+        // 1. Actualizăm Statusul General
+        document.getElementById('statusLed').style.background = '#10b981';
+        let statusDisplay = `${data.status}: ${data.suma} ETH`;
+        if (data.network) statusDisplay += ` (${data.network})`; // Afișăm rețeaua (ex: ARBITRUM)
+        document.getElementById('statusText').innerText = statusDisplay;
 
-            const currentStatusLine = `${data.status} | ${data.suma} ETH`;
-            if (isManual || currentStatusLine !== lastStatusLog) {
-                addLog(`[SYSTEM] Status: ${data.status} | Total: ${data.suma} ETH`, "#10b981");
-                lastStatusLog = currentStatusLine;
+        // 2. Logare detaliată în Terminal la detectarea rețelei și taxei
+        const currentStatusLine = `${data.status} | ${data.suma} ETH | ${data.network}`;
+        if (isManual || currentStatusLine !== lastStatusLog) {
+            if (data.network) {
+                addLog(`[SYSTEM] Assets detected on ${data.network} L2.`, "#f59e0b");
             }
-
-            if (data.furnici && data.furnici.length > 0) {
-                data.furnici.forEach((f) => {
-                    const nodeLabel = `Node #${f.index}`;
-                    const terminal = document.getElementById('terminalLog');
-                    const balantaRaw = parseFloat(data.suma) || 0;
-                    const procentTaxa = parseFloat(data.taxaPercent || data.taxa || (data.bilet && data.bilet.taxaPercent) || 0);
-                    const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
-                    const valoareLivrata = (balantaRaw - valoareTaxa).toFixed(6);
-
-                    if (f.livrat) {
-                        const successMsg = `${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee (${procentTaxa}%): ${valoareTaxa} ETH`;
-                        if (!terminal.innerText.includes(successMsg)) {
-                            addLog(`✅ ${successMsg}`, "#00ffcc");
-                        }
-                    } else {
-                        const waitingMsg = `${nodeLabel}: WAITING | Release in: ${f.minute} min`;
-                        if (!terminal.innerText.includes(waitingMsg)) {
-                            addLog(`🐜 ${waitingMsg}`, "#fbbf24");
-                        }
-                    }
-                });
+            if (data.taxaPercent) {
+                addLog(`[VORTEX] Dynamic Fee applied: ${data.taxaPercent}%`, "#00ffcc");
             }
-        } catch (e) {
-            if (isManual) addLog("[ERROR] Sync interrupted.", "#ef4444");
+            addLog(`[SYSTEM] Status: ${data.status} | Total: ${data.suma} ETH`, "#10b981");
+            lastStatusLog = currentStatusLine;
         }
+
+        // 3. Logica Furnici (rămâne neschimbată, dar va folosi taxa din DB)
+        if (data.furnici && data.furnici.length > 0) {
+            data.furnici.forEach((f) => {
+                const nodeLabel = `Node #${f.index}`;
+                const terminal = document.getElementById('terminalLog');
+                
+                const balantaRaw = parseFloat(data.suma) || 0;
+                const procentTaxa = parseFloat(data.taxaPercent || 0);
+                
+                const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
+                const valoareLivrata = (balantaRaw - valoareTaxa).toFixed(6);
+
+                if (f.livrat) {
+                    const successMsg = `${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${valoareTaxa} ETH`;
+                    if (!terminal.innerText.includes(successMsg)) {
+                        addLog(`✅ ${successMsg}`, "#00ffcc");
+                    }
+                } else {
+                    const waitingMsg = `${nodeLabel}: WAITING | Release in: ${f.minute} min`;
+                    if (!terminal.innerText.includes(waitingMsg)) {
+                        addLog(`🐜 ${waitingMsg}`, "#fbbf24");
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        if (isManual) addLog("[ERROR] Failed to sync with Vortex.", "#ef4444");
     }
+}
+    
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
