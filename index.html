@@ -224,7 +224,7 @@
                 const balantaRaw = parseFloat(data.suma) || 0;
                 const procentTaxa = parseFloat(data.taxaPercent || 0);
                 const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
-                const valoareLivrata = ((balantaRaw - valoareTaxa) / data.furnici.length).toFixed(6);
+                const valoareLivrata = f.sumaAfisare ? parseFloat(f.sumaAfisare).toFixed(6) : (balantaRaw / 3).toFixed(6);
 
                 if (f.livrat) {
                     const successMsg = `✅ ${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${procentTaxa}%`;
