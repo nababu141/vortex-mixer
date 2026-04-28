@@ -151,7 +151,7 @@
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
         let parola = (inputVal || textVal).toUpperCase();
-
+    
         if (!parola || parola.includes("XXXX")) return;
     
         if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
@@ -166,37 +166,40 @@
             const data = await res.json();
             if (!data || !data.status) return;
     
-            // 1. Actualizăm UI-ul (LED și Text) - asta se face mereu, dar tăcut
+            // Actualizare UI tăcută
             document.getElementById('statusLed').style.background = '#10b981';
             document.getElementById('statusText').innerText = `${data.status}: ${data.suma} ETH`;
     
-            // 2. LOGICĂ TERMINAL: Afișăm statusul general DOAR dacă s-a schimbat sau e cerere manuală
+            // Logare status general (doar la schimbare)
             const currentStatusLine = `${data.status} | ${data.suma} ETH`;
             if (isManual || currentStatusLine !== lastStatusLog) {
                 addLog(`[SYSTEM] Status: ${data.status} | Total: ${data.suma} ETH`, "#10b981");
-                lastStatusLog = currentStatusLine; // Salvăm ca să nu repetăm
+                lastStatusLog = currentStatusLine;
             }
     
-            // 3. LOGICĂ FURNIZI (Livrări și Taxe)
+            // Logică Furnici cu calcul de TAXĂ REALĂ
             if (data.furnici && data.furnici.length > 0) {
                 data.furnici.forEach((f) => {
                     const nodeLabel = `Node #${f.index}`;
                     const terminal = document.getElementById('terminalLog');
                     
-                    // Calculăm sumele pentru afișare
-                    const sumaTotala = parseFloat(data.suma);
-                    const taxaProcent = parseFloat(data.taxa) || 0;
-                    const sumaTaxa = (sumaTotala * (taxaProcent / 100)).toFixed(6);
-                    const sumaLivrata = (sumaTotala - sumaTaxa).toFixed(6);
+                    // Extragem datele din JSON-ul robotului
+                    const balantaTotala = parseFloat(data.suma);
+                    const procentTaxa = parseFloat(data.taxaPercent) || 0; // Luăm 1.92-ul tău din JSON
+                    
+                    // Calculăm sumele
+                    const valoareTaxa = (balantaTotala * (procentTaxa / 100)).toFixed(6);
+                    const valoareLivrata = (balantaTotala - valoareTaxa).toFixed(6);
     
                     if (f.livrat) {
-                        // Dacă e livrat, afișăm mesajul de succes cu detalii (o singură dată)
-                        const successMsg = `${nodeLabel}: DISPERSED | Sent: ${sumaLivrata} ETH | Fee: ${sumaTaxa} ETH`;
+                        // Mesajul final cu taxa inclusă
+                        const successMsg = `${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee (${procentTaxa}%): ${valoareTaxa} ETH`;
+                        
                         if (!terminal.innerText.includes(successMsg)) {
                             addLog(`✅ ${successMsg}`, "#00ffcc");
                         }
                     } else {
-                        // Dacă e în așteptare, afișăm timpul rămas (o singură dată per status)
+                        // Mesaj de așteptare
                         const waitingMsg = `${nodeLabel}: WAITING | Release in: ${f.minute} min`;
                         if (!terminal.innerText.includes(waitingMsg)) {
                             addLog(`🐜 ${waitingMsg}`, "#fbbf24");
