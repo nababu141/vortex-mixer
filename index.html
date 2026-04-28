@@ -155,7 +155,36 @@
         log.scrollTop = log.scrollHeight;
     }
 
-    // 2. ACUM VIN CELELALTE (Generate, Check, etc.)
+    async function generateAccess() {
+    addLog(">> Initializing secure vault generation...", "#38bdf8");
+    
+    try {
+        const res = await fetch(`${API_URL}/api/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (data.address && data.parola) {
+            // Umplem câmpurile cu datele primite de la robot
+            document.getElementById('adrText').innerText = data.address;
+            document.getElementById('codText').innerText = data.parola;
+            
+            // Facem zona de rezultat vizibilă
+            document.getElementById('result-area').style.display = 'block';
+            
+            addLog("✅ Vault synchronized. Waiting for deposit...", "#00ffcc");
+            
+            // Pornim scanarea automată ca să detectăm când intră banii
+            setInterval(checkBalance, 10000);
+    } else {
+            addLog("[ERROR] Vault creation failed. Try again.", "#ef4444");
+            }
+        } catch (e) {
+            addLog("[CRITICAL] Cannot reach Vortex API.", "#ef4444");
+        }
+    }
+        // 2. ACUM VIN CELELALTE (Generate, Check, etc.)
     async function checkBalance(isManual = false) {
     let parola = "";
 
