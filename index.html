@@ -267,11 +267,17 @@
     }
 
     function showTab(id) {
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    
+    // Resetăm butoanele
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    // Căutăm butonul care a fost apăsat după text sau index dacă event-ul lipsește
+    if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add('active');
     }
+} 
 
     function copy(id) {
         const text = document.getElementById(id).innerText;
@@ -335,7 +341,7 @@
         setTimeout(loopNotifications, Math.random() * (30000 - 15000) + 15000);
     }
     
-    setTimeout(loopNotifications, 3000);
+    setTimeout(loopNotifications, 5000);
 </script>
 </body>
 </html>
