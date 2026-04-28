@@ -135,7 +135,9 @@
 
 <script>
     const API_URL = "https://api.nababu.io";
+    let lastStatusLog = "";
 
+    // 1. ASTA TREBUIE SĂ FIE PRIMA (Funcția care scrie în terminal)
     function addLog(msg, color = "#10b981") {
         const log = document.getElementById('terminalLog');
         if (!log) return;
@@ -147,15 +149,41 @@
         log.scrollTop = log.scrollHeight;
     }
 
+    // 2. ACUM VIN CELELALTE (Generate, Check, etc.)
+    async function generateAccess() {
+        document.getElementById('statusLed').style.background = '#64748b';
+        document.getElementById('statusText').innerText = 'Awaiting Deposit';
+        
+        addLog(">> Connecting to Vortex Relay...", "#38bdf8");
+
+        try {
+            const res = await fetch(`${API_URL}/api/generate-ticket`);
+            const data = await res.json();
+            
+            if (data && data.adresa) {
+                document.getElementById('result-area').style.display = 'block';
+                document.getElementById('adrText').innerText = data.adresa;
+                document.getElementById('codText').innerText = data.cod;
+                
+                if(document.getElementById('inputCod')) {
+                    document.getElementById('inputCod').value = data.cod;
+                }
+                addLog(`[SYSTEM] Vault ${data.cod} allocated.`, "#00ffcc");
+            }
+        } catch (e) {
+            addLog("[CRITICAL] Relayer offline.", "#ef4444");
+        }
+    }
+
     async function checkBalance(isManual = false) {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
         let parola = (inputVal || textVal).toUpperCase();
-    
+
         if (!parola || parola.includes("XXXX")) return;
-    
+
         if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
-    
+
         try {
             const res = await fetch(`${API_URL}/api/status`, {
                 method: 'POST',
@@ -165,41 +193,31 @@
             
             const data = await res.json();
             if (!data || !data.status) return;
-    
-            // Actualizare UI tăcută
+
             document.getElementById('statusLed').style.background = '#10b981';
             document.getElementById('statusText').innerText = `${data.status}: ${data.suma} ETH`;
-    
-            // Logare status general (doar la schimbare)
+
             const currentStatusLine = `${data.status} | ${data.suma} ETH`;
             if (isManual || currentStatusLine !== lastStatusLog) {
                 addLog(`[SYSTEM] Status: ${data.status} | Total: ${data.suma} ETH`, "#10b981");
                 lastStatusLog = currentStatusLine;
             }
-    
-            // Logică Furnici cu calcul de TAXĂ REALĂ
+
             if (data.furnici && data.furnici.length > 0) {
                 data.furnici.forEach((f) => {
                     const nodeLabel = `Node #${f.index}`;
                     const terminal = document.getElementById('terminalLog');
-                    
-                    // Extragem datele din JSON-ul robotului
                     const balantaRaw = parseFloat(data.suma) || 0;
                     const procentTaxa = parseFloat(data.taxaPercent || data.taxa || (data.bilet && data.bilet.taxaPercent) || 0);
-                    
-                    // Calculăm sumele
                     const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
                     const valoareLivrata = (balantaRaw - valoareTaxa).toFixed(6);
-    
+
                     if (f.livrat) {
-                        // Mesajul final cu taxa inclusă
                         const successMsg = `${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee (${procentTaxa}%): ${valoareTaxa} ETH`;
-                        
                         if (!terminal.innerText.includes(successMsg)) {
                             addLog(`✅ ${successMsg}`, "#00ffcc");
                         }
                     } else {
-                        // Mesaj de așteptare
                         const waitingMsg = `${nodeLabel}: WAITING | Release in: ${f.minute} min`;
                         if (!terminal.innerText.includes(waitingMsg)) {
                             addLog(`🐜 ${waitingMsg}`, "#fbbf24");
@@ -208,10 +226,9 @@
                 });
             }
         } catch (e) {
-            if (isManual) addLog("[ERROR] Failed to sync with Vortex.", "#ef4444");
+            if (isManual) addLog("[ERROR] Sync interrupted.", "#ef4444");
         }
     }
-
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
