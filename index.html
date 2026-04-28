@@ -264,7 +264,64 @@
         navigator.clipboard.writeText(text);
         addLog(">> Data copied to secure clipboard.", "#38bdf8");
     }
+</script>
 
+<div id="notification-area" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
+
+<script>
+    const activities = [
+        "New Vault Generated (BASE)",
+        "Privacy Mix: 0.15 ETH completed",
+        "New Vault Generated (BASE)",
+        "Privacy Mix: 1.05 ETH completed",
+        "Privacy Mix: 0.08 ETH completed",
+        "Incoming deposit detected...",
+        "Relayer: Funds broadcasted"
+    ];
+
+    function showNotification() {
+        const area = document.getElementById('notification-area');
+        if (!area) return;
+        const toast = document.createElement('div');
+        const text = activities[Math.floor(Math.random() * activities.length)];
+        
+        toast.style.cssText = `
+            background: #0f172a;
+            color: #38bdf8;
+            border: 1px solid #1e293b;
+            border-left: 4px solid #10b981;
+            padding: 12px 20px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-family: monospace;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            animation: fadeInRight 0.5s ease-out;
+            opacity: 0.9;
+        `;
+        
+        toast.innerHTML = `<span style="color: #64748b;">[${new Date().toLocaleTimeString()}]</span> ${text}`;
+        area.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = "fadeOut 0.5s ease-in";
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
+    const styleNotify = document.createElement('style');
+    styleNotify.innerHTML = `
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    `;
+    document.head.appendChild(styleNotify);
+
+    function loopNotifications() {
+        showNotification();
+        setTimeout(loopNotifications, Math.random() * (30000 - 15000) + 15000);
+    }
+    
+    setTimeout(loopNotifications, 3000);
 </script>
 </body>
 </html>
