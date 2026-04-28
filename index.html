@@ -187,18 +187,11 @@
     }
         // 2. ACUM VIN CELELALTE (Generate, Check, etc.)
     async function checkBalance(isManual = false) {
-    let parola = "";
+    const inputVal = document.getElementById('inputCodManual')?.value.trim();
+    const textVal = document.getElementById('codText')?.innerText.trim();
+    let parola = (inputVal || textVal || "").toUpperCase();
 
-    if (isManual) {
-        // Dacă dăm click pe butonul din stânga, luăm DOAR din inputul de scanare
-        parola = document.getElementById('inputCodManual').value.trim().toUpperCase();
-    } else {
-        // Altfel (scan automat după generare), luăm din câmpul unde s-a generat cheia
-        parola = document.getElementById('codText').innerText.trim().toUpperCase();
-    }
-
-    // Blocăm scanarea dacă e codul default sau e gol
-    if (!parola || parola === "" || parola.includes("XXXX")) {
+    if (!parola || parola.includes("XXXX") || parola === "") {
         if (isManual) addLog(">> Error: Please enter a valid Vault Key.", "#ef4444");
         return;
     }
@@ -214,52 +207,45 @@
         
         const data = await res.json();
         if (!data || !data.status) return;
-    
-            // 1. Actualizăm Statusul General
-            document.getElementById('statusLed').style.background = '#10b981';
-            let statusDisplay = `${data.status}: ${data.suma} ETH`;
-            if (data.network) statusDisplay += ` (${data.network})`; // Afișăm rețeaua (ex: ARBITRUM)
-            document.getElementById('statusText').innerText = statusDisplay;
-    
-            // 2. Logare detaliată în Terminal la detectarea rețelei și taxei
-            const currentStatusLine = `${data.status} | ${data.suma} ETH | ${data.network}`;
-            if (isManual || currentStatusLine !== lastStatusLog) {
-                if (data.network) {
-                    addLog(`[SYSTEM] Assets detected on ${data.network} L2.`, "#f59e0b");
-                }
-                if (data.taxaPercent) {
-                    addLog(`[VORTEX] Dynamic Fee applied: ${data.taxaPercent}%`, "#00ffcc");
-                }
-                addLog(`[SYSTEM] Status: ${data.status} | Total: ${data.suma} ETH`, "#10b981");
-                lastStatusLog = currentStatusLine;
-            }
-    
-            // 3. Logica Furnici (rămâne neschimbată, dar va folosi taxa din DB)
-            if (data.furnici && data.furnici.length > 0) {
-    data.furnici.forEach((f) => {
-        const terminal = document.getElementById('terminalLog');
-        const nodeLabel = `Node #${f.index}`;
-        
-        // Calculăm sumele pentru afișare frumoasă
-        const balantaRaw = parseFloat(data.suma) || 0;
-        const procentTaxa = parseFloat(data.taxaPercent || 0);
-        const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
-        const valoareLivrata = ((balantaRaw - valoareTaxa) / data.furnici.length).toFixed(6);
 
-        if (f.livrat) {
-            const successMsg = `✅ ${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${procentTaxa}%`;
-            // Logăm doar dacă nu am logat deja succesul
-            if (!terminal.innerText.includes(successMsg)) {
-                addLog(successMsg, "#00ffcc");
-            }
-        } else {
-            const waitingMsg = `🐜 ${nodeLabel}: WAITING | Release in: ${f.minute} min | Target: ${valoareLivrata} ETH`;
-            // Logăm statusul de așteptare dacă s-a schimbat timpul
-            if (!terminal.innerText.includes(waitingMsg)) {
-                addLog(waitingMsg, "#fbbf24");
-            }
+        // 1. Actualizăm interfața mare
+        const led = document.getElementById('statusLed');
+        if (led) led.style.background = '#10b981';
+        
+        const stText = document.getElementById('statusText');
+        if (stText) stText.innerText = `${data.status}: ${data.suma} ETH (${data.network || '...'})`;
+
+        // 2. Logica de afișare Furnici în Terminal
+        if (data.furnici && data.furnici.length > 0) {
+            data.furnici.forEach((f) => {
+                const nodeLabel = `Node #${f.index}`;
+                
+                // Calculăm sumele aproximative pentru afișare
+                const balantaRaw = parseFloat(data.suma) || 0;
+                const procentTaxa = parseFloat(data.taxaPercent || 0);
+                const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
+                const valoareLivrata = ((balantaRaw - valoareTaxa) / data.furnici.length).toFixed(6);
+
+                if (f.livrat) {
+                    const successMsg = `✅ ${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${procentTaxa}%`;
+                    if (!document.getElementById('terminalLog').innerText.includes(successMsg)) {
+                        addLog(successMsg, "#00ffcc");
+                    }
+                } else {
+                    const waitingMsg = `🐜 ${nodeLabel}: WAITING | Release in: ${f.minute} min | Target: ${valoareLivrata} ETH`;
+                    // Logăm doar dacă nu există deja mesajul exact (ca să nu umplem terminalul)
+                    if (!document.getElementById('terminalLog').innerText.includes(waitingMsg)) {
+                        addLog(waitingMsg, "#fbbf24");
+                    }
+                }
+            });
         }
-    });
+
+        lastStatusLog = `${data.status}-${data.suma}`;
+    } catch (e) {
+        if (isManual) addLog("[ERROR] Sync interrupted.", "#ef4444");
+        console.error("CheckBalance Error:", e);
+    }
 }
     
     async function processWithdraw() {
