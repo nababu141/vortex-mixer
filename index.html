@@ -184,12 +184,12 @@
                     const terminal = document.getElementById('terminalLog');
                     
                     // Extragem datele din JSON-ul robotului
-                    const balantaTotala = parseFloat(data.suma);
-                    const procentTaxa = parseFloat(data.taxaPercent) || 0; // Luăm 1.92-ul tău din JSON
+                    const balantaRaw = parseFloat(data.suma) || 0;
+                    const procentTaxa = parseFloat(data.taxaPercent || data.taxa || (data.bilet && data.bilet.taxaPercent) || 0);
                     
                     // Calculăm sumele
-                    const valoareTaxa = (balantaTotala * (procentTaxa / 100)).toFixed(6);
-                    const valoareLivrata = (balantaTotala - valoareTaxa).toFixed(6);
+                    const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
+                    const valoareLivrata = (balantaRaw - valoareTaxa).toFixed(6);
     
                     if (f.livrat) {
                         // Mesajul final cu taxa inclusă
