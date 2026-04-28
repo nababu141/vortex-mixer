@@ -121,7 +121,6 @@
 <script>
     const API_URL = "https://api.nababu.io";
 
-    // 1. Terminalul (Curge Corect în JOS)
     function addLog(msg, color = "#10b981") {
         const log = document.getElementById('terminalLog');
         if (!log) return;
@@ -133,7 +132,6 @@
         log.scrollTop = log.scrollHeight;
     }
 
-    // 2. Generare (Legată direct la butonul tău)
     async function generateAccess() {
         addLog(">> Connecting to Vortex Relay...", "#38bdf8");
         try {
@@ -143,20 +141,19 @@
                 document.getElementById('result-area').style.display = 'block';
                 document.getElementById('adrText').innerText = data.adresa;
                 document.getElementById('codText').innerText = data.cod;
-                addLog(`[SUCCESS] Vault ${data.cod} generated.`, "#00ffcc");
+                addLog(`[SYSTEM] Vault ${data.cod} allocated.`, "#00ffcc");
             }
         } catch (e) {
-            addLog("[ERROR] API offline.", "#ef4444");
+            addLog("[CRITICAL] API connection failed.", "#ef4444");
         }
     }
 
-    // 3. Verificare Status (Oglinda Robotului)
     async function checkBalance() {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
         let parola = (inputVal || textVal).toUpperCase();
 
-        if(!parola || parola.includes("XXXX")) return;
+        if (!parola || parola.includes("XXXX")) return;
 
         try {
             const res = await fetch(`${API_URL}/api/status`, {
@@ -164,33 +161,47 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ parola })
             });
+            
+            if (res.status === 404) return; // Silent check dacă nu există biletul
+
             const data = await res.json();
-            if (data.status) {
+
+            if (data && data.status) {
                 document.getElementById('statusLed').style.background = '#10b981';
                 document.getElementById('statusText').innerText = `${data.status}: ${data.suma} ETH`;
-                
+
                 if (data.furnici && data.furnici.length > 0) {
-                    data.furnici.forEach(f => {
-                        const msgId = `Node ${f.index}:`;
-                        if (!document.getElementById('terminalLog').innerText.includes(msgId + (f.livrat ? " DISPERSED" : " WAITING"))) {
-                            addLog(`${f.livrat ? '✅' : '🐜'} ${msgId} ${f.livrat ? 'DISPERSED' : 'WAITING'}`, f.livrat ? "#10b981" : "#fbbf24");
+                    data.furnici.forEach((f) => {
+                        const nodeLabel = `Node ${f.index}:`;
+                        const statusCurent = f.livrat ? "DISPERSED" : "WAITING";
+                        const terminal = document.getElementById('terminalLog');
+
+                        if (!terminal.innerText.includes(nodeLabel + " " + statusCurent)) {
+                            const icon = f.livrat ? "✅" : "🐜";
+                            const color = f.livrat ? "#10b981" : "#fbbf24";
+                            const etaInfo = f.livrat ? "DONE" : "ETA: " + (f.minute || "?") + "m";
+                            addLog(`${icon} ${nodeLabel} ${statusCurent} (${etaInfo})`, color);
                         }
                     });
                 }
             }
-        } catch (e) { console.error("Status check failed"); }
+        } catch (e) {
+            console.warn("Background sync active...");
+        }
     }
 
-    // 4. Retragere
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
         const textVal = document.getElementById('codText').innerText;
         const parola = (inputVal || textVal).toUpperCase();
         const dest = document.getElementById('inputDest').value.trim();
 
-        if(!dest || dest.length < 40) return addLog("[ERROR] Invalid Address!", "#ef4444");
+        if (!dest || dest.length < 40) {
+            addLog("[REJECTED] Destination address invalid.", "#ef4444");
+            return;
+        }
 
-        addLog(`>> Initiating dispersal for ${parola}...`, "#fbbf24");
+        addLog(`>> Routing sequence for ${parola}...`, "#fbbf24");
         try {
             const res = await fetch(`${API_URL}/api/withdraw`, {
                 method: 'POST',
@@ -198,28 +209,33 @@
                 body: JSON.stringify({ parola, adresaDestinatie: dest })
             });
             const data = await res.json();
-            if (data.succes) {
-                addLog("🚀 [VORTEX] Ants engaged!", "#00ffcc");
-                setInterval(checkBalance, 10000);
+            
+            if (res.ok) {
+                addLog("🚀 [VORTEX] Ants sequence engaged!", "#00ffcc");
+                setInterval(checkBalance, 15000);
             } else {
-                addLog(`[DENIED] ${data.eroare}`, "#ef4444");
+                // Afișăm eroarea exactă de la robot (ex: Invalid or active)
+                addLog(`[DENIED] ${data.eroare || 'Request failed'}`, "#ef4444");
             }
-        } catch (e) { addLog("[ERROR] Connection lost.", "#ef4444"); }
+        } catch (e) {
+            addLog("[CRITICAL] Relayer timeout.", "#ef4444");
+        }
     }
 
-    // 5. Utilitare
     function showTab(id) {
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if(event) event.currentTarget.classList.add('active');
+        if (event && event.currentTarget) event.currentTarget.classList.add('active');
     }
 
     function copy(id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text);
-        addLog("Copied to clipboard.", "#38bdf8");
+        addLog(">> Data copied to secure clipboard.", "#38bdf8");
     }
+
+    setInterval(checkBalance, 30000);
 </script>
 </body>
 </html>
