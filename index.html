@@ -187,66 +187,77 @@
     }
         // 2. ACUM VIN CELELALTE (Generate, Check, etc.)
     async function checkBalance(isManual = false) {
-    const inputVal = document.getElementById('inputCodManual')?.value.trim();
-    const textVal = document.getElementById('codText')?.innerText.trim();
-    let parola = (inputVal || textVal || "").toUpperCase();
-
-    if (!parola || parola.includes("XXXX") || parola === "") {
-        if (isManual) addLog(">> Error: Please enter a valid Vault Key.", "#ef4444");
-        return;
-    }
-
-    if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
-
-    try {
-        const res = await fetch(`${API_URL}/api/status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ parola })
-        });
-        
-        const data = await res.json();
-        if (!data || !data.status) return;
-
-        // 1. Actualizăm interfața mare
-        const led = document.getElementById('statusLed');
-        if (led) led.style.background = '#10b981';
-        
-        const stText = document.getElementById('statusText');
-        if (stText) stText.innerText = `${data.status}: ${data.suma} ETH (${data.network || '...'})`;
-
-        // 2. Logica de afișare Furnici în Terminal
-        if (data.furnici && data.furnici.length > 0) {
-            data.furnici.forEach((f) => {
-                const nodeLabel = `Node #${f.index}`;
-                
-                // Calculăm sumele aproximative pentru afișare
-                const balantaRaw = parseFloat(data.suma) || 0;
-                const procentTaxa = parseFloat(data.taxaPercent || 0);
-                const valoareTaxa = (balantaRaw * (procentTaxa / 100)).toFixed(6);
-                const valoareLivrata = f.sumaAfisare ? parseFloat(f.sumaAfisare).toFixed(6) : (balantaRaw / 3).toFixed(6);
-
-                if (f.livrat) {
-                    const successMsg = `✅ ${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH | Fee: ${procentTaxa}%`;
-                    if (!document.getElementById('terminalLog').innerText.includes(successMsg)) {
-                        addLog(successMsg, "#00ffcc");
-                    }
-                } else {
-                    const waitingMsg = `🐜 ${nodeLabel}: WAITING | Release in: ${f.minute} min | Target: ${valoareLivrata} ETH`;
-                    // Logăm doar dacă nu există deja mesajul exact (ca să nu umplem terminalul)
-                    if (!document.getElementById('terminalLog').innerText.includes(waitingMsg)) {
-                        addLog(waitingMsg, "#fbbf24");
-                    }
-                }
-            });
+        const inputVal = document.getElementById('inputCodManual')?.value.trim();
+        const textVal = document.getElementById('codText')?.innerText.trim();
+        let parola = (inputVal || textVal || "").toUpperCase();
+    
+        if (!parola || parola.includes("XXXX") || parola === "") {
+            if (isManual) addLog(">> Error: Please enter a valid Vault Key.", "#ef4444");
+            return;
         }
-
-        lastStatusLog = `${data.status}-${data.suma}`;
-    } catch (e) {
-        if (isManual) addLog("[ERROR] Sync interrupted.", "#ef4444");
-        console.error("CheckBalance Error:", e);
+    
+        if (isManual) addLog(`>> Interrogating Vault: ${parola}...`, "#38bdf8");
+    
+        try {
+            const res = await fetch(`${API_URL}/api/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parola })
+            });
+            
+            const data = await res.json();
+            if (!data || !data.status) return;
+    
+            // 1. Actualizăm interfața (LED și Text)
+            const led = document.getElementById('statusLed');
+            const stText = document.getElementById('statusText');
+            
+            if (data.status === "PROCESSING") {
+                if (led) led.style.background = '#10b981'; // Verde
+                if (stText) stText.innerText = `READY: ${data.suma} ETH (${data.network})`;
+                
+                // 🔥 FENTA MAGICĂ: Dacă e gata, arătăm zona de withdraw și ascundem zona de depozit
+                if (document.getElementById('result-area')) {
+                    document.getElementById('result-area').style.display = 'block';
+                }
+                // Dacă ai un tab sau o secțiune de retragere separat, o activăm aici
+                // showTab('withdraw-section'); // Exemplu dacă ai id-ul ăsta
+                
+            } else if (data.status === "DISPERSING") {
+                if (led) led.style.background = '#38bdf8'; // Albastru (în mișcare)
+                if (stText) stText.innerText = `DISPERSING FUNDS...`;
+            } else {
+                if (led) led.style.background = '#64748b'; // Gri (așteptare)
+                if (stText) stText.innerText = 'Awaiting Deposit...';
+            }
+    
+            // 2. Logica de afișare Furnici în Terminal
+            if (data.furnici && data.furnici.length > 0) {
+                // Curățăm logul vechi dacă e manual ca să nu fie dubluri
+                if (isManual) { /* logica opțională de curățare */ }
+    
+                data.furnici.forEach((f) => {
+                    const nodeLabel = `Node #${f.index}`;
+                    const valoareLivrata = f.sumaAfisare ? parseFloat(f.sumaAfisare).toFixed(6) : "0.000000";
+    
+                    if (f.livrat) {
+                        addLog(`✅ ${nodeLabel}: DISPERSED | Sent: ${valoareLivrata} ETH`, "#00ffcc");
+                    } else {
+                        addLog(`🐜 ${nodeLabel}: WAITING | Release in: ${f.minute} min | Target: ${valoareLivrata} ETH`, "#fbbf24");
+                    }
+                });
+            }
+        } catch (e) {
+            if (isManual) addLog("[ERROR] Sync interrupted.", "#ef4444");
+            console.error("CheckBalance Error:", e);
+        }
     }
-}
+            lastStatusLog = `${data.status}-${data.suma}`;
+        } catch (e) {
+            if (isManual) addLog("[ERROR] Sync interrupted.", "#ef4444");
+            console.error("CheckBalance Error:", e);
+        }
+    }
     
     async function processWithdraw() {
         const inputVal = document.getElementById('inputCod').value.trim();
