@@ -231,10 +231,14 @@
 
         // Afișăm furnicile dacă există
         if (data.furnici && data.furnici.length > 0) {
-            data.furnici.forEach((f) => {
-                const msg = f.livrat ? `✅ Node #${f.index}: DISPERSED` : `🐜 Node #${f.index}: WAITING (${f.minute}m)`;
-                if (!document.getElementById('terminalLog').innerText.includes(msg)) {
-                    addLog(msg, f.livrat ? "#00ffcc" : "#fbbf24");
+    data.furnici.forEach((f) => {
+        // Am adăugat taxa la finalul fiecărui mesaj
+        const msg = f.livrat 
+            ? `✅ Node #${f.index}: DISPERSED | Fee ${data.taxaPercent}%` 
+            : `🐜 Node #${f.index}: WAITING (${f.minute}m) | Fee ${data.taxaPercent}%`;
+
+        if (!document.getElementById('terminalLog').innerText.includes(msg)) {
+            addLog(msg, f.livrat ? "#00ffcc" : "#fbbf24");
                 }
             });
         }
