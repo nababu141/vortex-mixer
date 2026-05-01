@@ -323,9 +323,22 @@
     function showNotification() {
         const area = document.getElementById('notification-area');
         if (!area) return;
-        const toast = document.createElement('div');
-        const text = activities[Math.floor(Math.random() * activities.length)];
         
+        // --- LOGICĂ NOUĂ PENTRU REZULTATE RANDOM ---
+        const networks = ["Base", "Arbitrum", "Optimism"];
+        const net = networks[Math.floor(Math.random() * networks.length)];
+        
+        // Sumă random între 0.08 și 14.5 ETH
+        const amount = (Math.random() * (14.5 - 0.08) + 0.08).toFixed(2);
+        
+        // Adresă random gen 0x...
+        const addr = "0x" + Math.random().toString(16).slice(2, 6) + "..." + Math.random().toString(16).slice(2, 6);
+        
+        // Mesajul construit dinamic
+        const text = `<b style="color:#10b981">[${net}]</b> User ${addr} dispersed <b style="color:#fff">${amount} ETH</b>`;
+        // ------------------------------------------
+
+        const toast = document.createElement('div');
         toast.style.cssText = `
             background: #0f172a;
             color: #38bdf8;
