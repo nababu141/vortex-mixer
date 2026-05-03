@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+[10:39, 03.05.2026] Adi: <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,142 +8,198 @@
         body { background: #020617; color: #94a3b8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; min-height: 100vh; margin: 0; }
         .main-layout { display: flex; justify-content: center; align-items: flex-start; gap: 30px; padding: 40px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
         .side-panel { width: 250px; background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; font-size: 11px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .side-panel h4 { color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-top: 0; }
-        .container { width: 100%; max-width: 500px; background: #0f172a; padding: 30px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        h1 { color: #f8fafc; text-align: center; font-weight: 300; letter-spacing: 8px; font-size: 28px; margin-bottom: 30px; text-transform: uppercase; margin-top: 0; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-        .tab-btn { flex: 1; background: #1e293b; color: #94a3b8; border: none; padding: 12px; cursor: pointer; font-weight: 600; border-radius: 4px; transition: 0.3s; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
-        .tab-btn.active { background: #38bdf8; color: #020617; }
-        .card { display: none; margin-bottom: 25px; padding: 20px; background: #020617; border-radius: 8px; border: 1px solid #1e293b; }
-        .card.active { display: block; animation: fadeIn 0.3s ease; }
-        h3 { color: #38bdf8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
-        button.main-btn { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; padding: 15px; cursor: pointer; width: 100%; font-weight: 600; transition: 0.3s; border-radius: 4px; text-transform: uppercase; letter-spacing: 2px; }
-        button.main-btn:hover { background: #38bdf8; color: #020617; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-        .data-display { background: #0f172a; padding: 15px; border-radius: 6px; border-left: 3px solid #38bdf8; margin-bottom: 15px; }
-        .label-text { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        .address-text { color: #f1f5f9; font-family: 'Courier New', monospace; font-size: 14px; word-break: break-all; line-height: 1.4; display: block; margin: 10px 0; }
-        .code-text { color: #fbbf24; font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; }
-        .copy-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .copy-btn { background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        .status-bar { display: flex; align-items: center; gap: 10px; margin-top: 20px; background: #020617; padding: 12px; border-radius: 4px; border: 1px dashed #334155; }
-        #statusLed { width: 12px; height: 12px; background: #475569; border-radius: 50%; transition: 0.3s; }
-        .log { background: #000; color: #10b981; padding: 15px; height: 150px; overflow-y: auto; font-size: 11px; border: 1px solid #1e293b; margin-top: 20px; font-family: 'Courier New', monospace; border-radius: 4px; border-left: 3px solid #38bdf8; line-height: 1.6; }
-        input { width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 12px; background: #020617; border: 1px solid #1e293b; color: #38bdf8; border-radius: 4px; outline: none; font-family: monospace; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-        @media (max-width: 900px) { .main-layout { flex-direction: column; align-items: center; } .side-panel { width: 100%; max-width: 500px; } }
+        .side-panel h4 { color: …
+[10:43, 03.05.2026] Adi: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NABABU | High-Tier Privacy Protocol</title>
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-green: #00ff88;
+            --dark-bg: #050505;
+            --glass: rgba(15, 23, 42, 0.7);
+        }
+
+        body { 
+            background: var(--dark-bg); 
+            color: #94a3b8; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; 
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 50%),
+                linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9));
+        }
+
+        /* Fundal animat tip Vortex */
+        .vortex-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+            background: repeating-radial-gradient(circle, #000 0%, #001 10%, #000 20%);
+            animation: rotateVortex 60s linear infinite;
+        }
+
+        @keyframes rotateVortex {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .main-layout { 
+            display: flex; justify-content: center; align-items: flex-start; 
+            gap: 30px; padding: 40px; flex-wrap: wrap; 
+            max-width: 1400px; margin: 0 auto; 
+        }
+
+        .side-panel { 
+            width: 280px; background: var(--glass); 
+            padding: 25px; border-radius: 16px; 
+            border: 1px solid rgba(56, 189, 248, 0.2); 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .container { 
+            width: 100%; max-width: 550px; 
+            background: var(--glass); padding: 40px; 
+            border-radius: 24px; border: 1px solid rgba(56, 189, 248, 0.3); 
+            backdrop-filter: blur(15px);
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.1);
+        }
+
+        h1 { 
+            color: #fff; text-align: center; font-weight: 900; 
+            letter-spacing: 12px; font-size: 32px; margin-bottom: 40px; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .tabs { display: flex; gap: 15px; margin-bottom: 30px; }
+        
+        .tab-btn { 
+            flex: 1; background: rgba(30, 41, 59, 0.5); 
+            color: #fff; border: 1px solid rgba(255,255,255,0.1); 
+            padding: 15px; cursor: pointer; font-weight: bold; 
+            border-radius: 8px; transition: 0.3s; 
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .tab-btn.active { 
+            background: var(--neon-blue); color: #000; 
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        button.main-btn { 
+            background: transparent; color: var(--neon-blue); 
+            border: 2px solid var(--neon-blue); padding: 20px; 
+            cursor: pointer; width: 100%; font-weight: 900; 
+            border-radius: 12px; text-transform: uppercase; 
+            letter-spacing: 3px; position: relative; overflow: hidden;
+        }
+
+        button.main-btn:hover { 
+            background: var(--neon-blue); color: #000;
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        /* Terminal Style Cyber */
+        .log { 
+            background: rgba(0, 0, 0, 0.8); color: var(--neon-green); 
+            padding: 20px; height: 180px; overflow-y: auto; 
+            font-size: 12px; border: 1px solid var(--neon-green); 
+            margin-top: 30px; font-family: 'Courier New', monospace; 
+            border-radius: 8px; box-shadow: inset 0 0 10px var(--neon-green);
+        }
+
+        .data-display {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 15px; border-radius: 10px; margin-top: 15px;
+        }
+
+        .code-text { color: #fbbf24; font-size: 20px; text-shadow: 0 0 10px #fbbf24; }
+
+        /* Scanning Animation */
+        .scan-line {
+            width: 100%; height: 2px; background: var(--neon-blue);
+            position: absolute; opacity: 0.5;
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; } 100% { top: 100%; }
+        }
+
     </style>
 </head>
 <body>
 
+<div class="vortex-bg"></div>
+
 <div class="main-layout">
     <div class="side-panel">
-        <h4>How it Works</h4>
-        <p><b style="color: #f1f5f9;">1. Generate:</b> Create a unique vault address.</p>
-        <p><b style="color: #f1f5f9;">2. Deposit:</b> Send ETH via Base, Arbitrum, or Optimism.</p>
-        <p><b style="color: #f1f5f9;">3. Anonymize:</b> Transaction history is detached.</p>
-        <p><b style="color: #f1f5f9;">4. Withdraw:</b> Use Access Key to claim to a clean address.</p>
-        
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
-        
-        <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 20px;">
-            <label style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-align: center;">Quick Vault Check</label>
-            <input type="text" id="inputCodManual" placeholder="NABABU-XXXX" 
-                style="width: 100%; background: #020617; border: 1px solid #334155; color: #10b981; padding: 12px; border-radius: 8px; font-size: 0.9rem; text-align: center; outline: none; font-family: monospace; margin-bottom: 12px; box-sizing: border-box;">
-            <button onclick="checkBalance(true)" 
-                style="width: 100%; background: transparent; color: #10b981; border: 1px solid #10b981; padding: 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase;">
-                Scan Status
-            </button>
+        <h4 style="color: var(--neon-blue);">Protocol Flow</h4>
+        <div class="data-display" style="border-left: 2px solid var(--neon-blue);">
+            <p>1. <b>GENERATE</b> Vault</p>
+            <p>2. <b>DEPOSIT</b> L2 Assets</p>
+            <p>3. <b>ANONYMIZE</b> Funds</p>
+            <p>4. <b>WITHDRAW</b> Clean ETH</p>
         </div>
 
-        <div style="background: rgba(30, 41, 59, 0.4); padding: 15px; border-radius: 16px; border: 1px solid rgba(56, 189, 248, 0.15); backdrop-filter: blur(8px); margin-top: 10px;">
-    
-    <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 18px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px;">
-        <div style="text-align: center;">
-            <img src="https://cryptologos.cc/logos/base-base-logo.png" width="18" style="filter: drop-shadow(0 0 5px #0052ff); display: block; margin: 0 auto;">
-            <span style="font-size: 0.5rem; color: #64748b; font-weight: bold;">BASE</span>
+        <h4 style="margin-top: 30px; color: var(--neon-green);">Network Status</h4>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>BASE</span><span style="color: var(--neon-green);">OPTIMIZED</span>
         </div>
-        <div style="text-align: center;">
-            <img src="https://cryptologos.cc/logos/arbitrum-arb-logo.png" width="18" style="filter: drop-shadow(0 0 5px #28a0f0); display: block; margin: 0 auto;">
-            <span style="font-size: 0.5rem; color: #64748b; font-weight: bold;">ARB</span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>ARB</span><span style="color: var(--neon-green);">OPTIMIZED</span>
         </div>
-        <div style="text-align: center;">
-            <img src="https://cryptologos.cc/logos/optimism-ethereum-op-logo.png" width="18" style="filter: drop-shadow(0 0 5px #ff0420); display: block; margin: 0 auto;">
-            <span style="font-size: 0.5rem; color: #64748b; font-weight: bold;">OP</span>
+        
+        <div style="margin-top: 30px; padding: 15px; background: rgba(0,255,136,0.1); border-radius: 10px; border: 1px solid var(--neon-green);">
+            <span style="font-size: 10px; color: var(--neon-green);">WHALE PROTOCOL (>5 ETH)</span>
+            <div style="font-size: 18px; font-weight: 900; color: #fff;">0.15% - 0.45%</div>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
-        <div style="text-align: left; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 5px;">
-            <span style="display: block; font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Retail</span>
-            <span style="display: block; font-size: 0.5rem; color: #64748b; margin-bottom: 3px;">Under 0.004 - 5 ETH</span>
-            <span style="font-size: 0.85rem; color: #ffffff; font-weight: 700; letter-spacing: -0.5px;">0.80 - 1.99%</span>
-        </div>
-        <div style="text-align: right; padding-left: 5px;">
-            <span style="display: block; font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Whale</span>
-            <span style="display: block; font-size: 0.5rem; color: #10b981; margin-bottom: 3px;">Over 5 ETH</span>
-            <span style="font-size: 0.85rem; color: #10b981; font-weight: 800; letter-spacing: -0.5px;">0.15 - 0.45%</span>
-        </div>
-    </div>
-</div>
-    </div> <div class="container">
+    <div class="container" style="position: relative;">
+        <div class="scan-line"></div>
         <h1>NABABU</h1>
+        
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('deposit')">Deposit</button>
-            <button class="tab-btn" onclick="showTab('withdraw')">Withdraw</button>
+            <button class="tab-btn active">Deposit</button>
+            <button class="tab-btn">Withdraw</button>
         </div>
 
-        <div id="deposit" class="card active">
-            <h3>01 Access Generation</h3>
-            <button class="main-btn" onclick="generateAccess()">Generate Vault Key</button>
+        <div class="card active">
+            <h3 style="color: var(--neon-blue);">Vortex Initializer</h3>
+            <button class="main-btn">Engage Vortex Key</button>
             
-            <div id="result-area" style="display: none; margin-top: 25px;">
-                <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                    <p style="color: #38bdf8; font-weight: bold; margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">📡 Omni-Chain Vault Active</p>
-                </div>
-
-                <div class="data-display">
-                    <span class="label-text">Vault Address</span>
-                    <div class="copy-row">
-                        <span id="adrText" class="address-text" style="color: #38bdf8;">0x...</span>
-                        <button class="copy-btn" onclick="copy('adrText')">📋</button>
-                    </div>
-                </div>
-                <div class="data-display">
-                    <span class="label-text">Private Access Key</span>
-                    <div class="copy-row">
-                        <span id="codText" class="code-text">NABABU-XXXX</span>
-                        <button class="copy-btn" onclick="copy('codText')">📋</button>
-                    </div>
-                </div>
-                <div class="status-bar">
-                    <div id="statusLed"></div>
-                    <span id="statusText" style="font-size: 11px; flex-grow: 1; color: #94a3b8;">LISTENING...</span>
-                    <button onclick="checkBalance()" style="background: transparent; border: 1px solid #4ade80; color: #4ade80; font-size: 9px; padding: 5px 8px; cursor: pointer; border-radius: 3px;">SCAN</button>
-                </div>
+            <div class="data-display" style="margin-top: 30px; border: 1px dashed var(--neon-blue);">
+                <span style="font-size: 10px; color: #64748b;">ACCESS KEY GENERATED</span>
+                <div class="code-text" style="margin: 10px 0;">NABABU-75F0OUW2</div>
+                <span style="font-size: 10px; color: var(--neon-green);">STATUS: DISPERSING THROUGH ANTS...</span>
             </div>
         </div>
 
-        <div id="withdraw" class="card">
-            <h3>02 Finalize Protocol</h3>
-            <input type="text" id="inputCod" placeholder="Enter NABABU-XXXX Key" autocomplete="off">
-            <input type="text" id="inputDest" placeholder="Destination Address" autocomplete="off">
-            <button class="main-btn" onclick="processWithdraw()">Withdraw Funds</button>
-        </div>
-
-        <div class="log" id="terminalLog">
-            <span style="color: #64748b;">>> Terminal initialized...</span>
+        <div class="log">
+            <div>>> NABABU VORTEX v2.0 initialized...</div>
+            <div style="color: #fff;">>> Node #1 (Ants 1): ONLINE</div>
+            <div style="color: #fff;">>> Node #2 (Ants 2): ONLINE</div>
+            <div>>> Scanning for Base/Arb/OP deposits...</div>
+            <div style="color: var(--neon-blue);">>> [Incoming] 53.00 ETH detected on BASE</div>
+            <div style="color: #fbbf24;">>> Applying Whale Fee: 0.19%</div>
+            <div style="color: var(--neon-green);">>> Dispersing funds... Privacy Shield Active.</div>
         </div>
     </div>
 
     <div class="side-panel">
-        <h4 style="color: #38bdf8;">System Specs</h4>
-        <div style="margin-bottom: 10px;">
-            <span style="color: #64748b;">Networks:</span> <span style="float: right; color: #38bdf8;">Multi-L2</span>
-        </div>
-        <div style="margin-bottom: 10px;">
-            <span style="color: #64748b;">Status:</span> <span style="float: right; color: #10b981;">ENCRYPTED</span>
+        <h4 style="color: var(--neon-blue);">Security Specs</h4>
+        <div style="font-size: 10px; line-height: 2;">
+            <p>ENCRYPTION: <b>AES-256 GCM</b></p>
+            <p>MIXING TYPE: <b>Vortex Dispersal</b></p>
+            <p>AUDIT STATUS: <b>UNTRACEABLE</b></p>
         </div>
     </div>
 </div>
